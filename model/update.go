@@ -159,7 +159,7 @@ func updateHour(t time.Time) {
 
 // 更新上一分钟的数据。如果仅仅是导入过去数据upsert设为false，需要更新页面设为true
 func updateMinute(t time.Time, upsert bool) {
-	lastMinTime := t.Add(-time.Minute)
+	lastMinTime := t.Add(-time.Minute * 5)
 	lastMin := lastMinTime.Minute()
 	lastMinDayStr := fmt.Sprintf("%04d/%02d/%02d", lastMinTime.Year(), lastMinTime.Month(), lastMinTime.Day())
 	lastMinHourStr := fmt.Sprintf("%s %02d", lastMinDayStr, lastMinTime.Hour())
