@@ -2,6 +2,7 @@ package routes
 
 import (
 	"energy/api/energyConfig"
+
 	"github.com/gin-gonic/gin"
 )
 

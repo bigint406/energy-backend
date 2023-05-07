@@ -22,7 +22,7 @@ func CalcEnergyOnlineRate(hourStr string) (float64, bool) {
 	var result defs.MongoCountResult
 	command := bson.D{{"count", "opc_data"}, {"query", bson.D{{"time", hourStr}}}}
 	MongoOPC.Database().RunCommand(context.TODO(), command).Decode(&result)
-	return float64(result.N) / 841, result.Ok
+	return float64(result.N) / float64(utils.OpcItemCount), result.Ok
 }
 
 // 能源站锅炉总功率
@@ -30,7 +30,7 @@ func CalcEnergyBoilerPower(hourStr string, min int) float64 {
 	ans := 0.0
 	for i := 1; i <= 4; i++ {
 		w, _ := GetOpcFloatList("ZLZ.%E5%8A%9F%E7%8E%87%E9%87%87%E9%9B%86"+fmt.Sprint(i), hourStr) //功率采集
-		if len(w) < min {
+		if len(w) <= min {
 			continue
 		}
 		ans += w[min]
@@ -60,7 +60,7 @@ func CalcEnergyBoilerRunningNum(hourStr string, min int) float64 {
 	ans := 0.0
 	for i := 1; i <= 4; i++ {
 		w, _ := GetOpcFloatList("ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD"+fmt.Sprint(i), hourStr) //运行状态
-		if len(w) < min {
+		if len(w) <= min {
 			continue
 		}
 		ans += w[min]
@@ -68,7 +68,7 @@ func CalcEnergyBoilerRunningNum(hourStr string, min int) float64 {
 	return ans
 }
 
-//设备该小时运行时间(分钟)
+// 设备该小时运行时间(分钟)
 func CalcEnergyRunningTimeHour(hourStr string) []float64 {
 	ans := make([]float64, 9)
 	for i := 1; i <= 4; i++ {
@@ -98,7 +98,7 @@ func CalcEnergyRunningTimeHour(hourStr string) []float64 {
 	return ans
 }
 
-//设备今日运行时间（小时）
+// 设备今日运行时间（小时）
 func CalcEnergyRunningTimeToday(t time.Time) []float64 {
 	dayStr := fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day())
 	hourStr := fmt.Sprintf("%s %02d", dayStr, t.Hour())
@@ -115,7 +115,7 @@ func CalcEnergyTankRunningNum(hourStr string, min int) float64 {
 	ans := 0.0
 	for _, v := range items {
 		w, _ := GetOpcFloatList(v, hourStr) //运行状态
-		if len(w) < min {
+		if len(w) <= min {
 			continue
 		}
 		ans += w[min]
@@ -525,7 +525,7 @@ var energyAlarmOpcList = map[string]defs.Alarm{
 	"ZLZ.%E9%94%85%E7%82%89%E6%89%A7%E8%A1%8C%E5%99%A8%E8%B7%B3%E9%97%B84": {"4#锅炉", "执行器跳闸"},
 }
 
-//报警
+// 报警
 func UpdateEnergyAlarm(hourStr string, min int, t time.Time) {
 	dayStr := fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day())
 	minStr := fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())

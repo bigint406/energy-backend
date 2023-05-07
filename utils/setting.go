@@ -30,6 +30,8 @@ var (
 	DeltaT int //计算服务的统计间隔
 
 	LoadPredictRouter string //负荷预测路由
+
+	OpcItemCount int //opc点位总数
 )
 
 func init() {
@@ -66,4 +68,6 @@ func LoadData(file *ini.File) {
 	DeltaT = file.Section("calculator").Key("DeltaT").MustInt(1)
 
 	LoadPredictRouter = file.Section("loadPredict").Key("LoadPredictRouter").MustString("http://100.100.100.100:9876")
+
+	OpcItemCount = file.Section("opc").Key("OpcItemCount").MustInt(1419)
 }

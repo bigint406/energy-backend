@@ -15,7 +15,7 @@ func loopTime(t time.Duration, callback func(time.Time, bool)) {
 		return
 	}
 	for {
-		now := time.Now().Local()
+		now := time.Now().Add(-time.Hour * 8)
 		nano := time.Duration(now.UnixNano())
 		deltaT := nano/t*t + t - nano
 		next := now.Add(deltaT)
@@ -159,11 +159,12 @@ func updateHour(t time.Time) {
 
 // 更新上一分钟的数据。如果仅仅是导入过去数据upsert设为false，需要更新页面设为true
 func updateMinute(t time.Time, upsert bool) {
-	lastMinTime := t.Add(-time.Minute)
+	lastMinTime := t.Add(-time.Minute * 10)
 	lastMin := lastMinTime.Minute()
 	lastMinDayStr := fmt.Sprintf("%04d/%02d/%02d", lastMinTime.Year(), lastMinTime.Month(), lastMinTime.Day())
 	lastMinHourStr := fmt.Sprintf("%s %02d", lastMinDayStr, lastMinTime.Hour())
-	// lastMinStr := fmt.Sprintf("%s:%02d", lastMinHourStr, lastMinTime.Minute())
+	lastMinStr := fmt.Sprintf("%s:%02d", lastMinHourStr, lastMinTime.Minute())
+	log.Println(lastMinStr)
 	var data float64
 
 	//报警数据
@@ -172,11 +173,11 @@ func updateMinute(t time.Time, upsert bool) {
 	UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime)   //二次泵站
 	//之后计算要用的数据
 
-	exampleTime := "2022/05/01 08:05"
+	// exampleTime := "2022/05/01 08:05"
 	//二次泵站
 	var HeatData defs.LouHeatList
-	// err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "heat"}}).Decode(&HeatData)
-	err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "heat"}}).Decode(&HeatData)
+	err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "heat"}}).Decode(&HeatData)
+	// err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "heat"}}).Decode(&HeatData)
 	if err == nil {
 		dataList := CalcPumpHeat(&HeatData) //统计输热量
 		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour1, dataList[0])
@@ -188,17 +189,21 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHourPubS, dataList[6])
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
+	} else {
+		log.Println(err)
 	}
 
 	//太阳能热水
 	var GAData defs.LouSolarWaterList
-	// GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "GA"}}).Decode(&GAData)
-	GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "GA"}}).Decode(&GAData)
+	GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "GA"}}).Decode(&GAData)
+	// GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "GA"}}).Decode(&GAData)
 	if GAerr == nil {
 		data = CalcSolarWaterHeatCollectionMin(&GAData.Info) //集热量
 		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterHeatCollectionHour, data)
 		data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
 		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
+	} else {
+		log.Println(err)
 	}
 
 	//实时展示数据

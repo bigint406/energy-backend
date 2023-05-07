@@ -5,8 +5,9 @@ import (
 	_ "energy/defs"
 	"energy/model"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
+	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
 )
@@ -29,7 +30,7 @@ var (
 	Peak_cost_time_2_end   = 21
 )
 
-//var loadDaily = [24]float64{206.54, 250.18, 214.85, 167.64, 182.05, 191.49, 211.57, 89.44, 27.73, 14.62, 7.68, 32.10, 32.35, 4.84, 33.30, 50.11, 37.97, 5.39, 22.92, 23.98, 87.57, 79.91, 89.96, 203.82}
+// var loadDaily = [24]float64{206.54, 250.18, 214.85, 167.64, 182.05, 191.49, 211.57, 89.44, 27.73, 14.62, 7.68, 32.10, 32.35, 4.84, 33.30, 50.11, 37.97, 5.39, 22.92, 23.98, 87.57, 79.91, 89.96, 203.82}
 var loadDaily = [24]float64{369.94, 355.52, 324.63, 308.96, 289.64, 191.60, 333.00, 177.77, 215.62, 159.51, 165.07, 168.37, 235.35, 218.12, 337.49, 329.06, 140.63, 213.57, 282.12, 299.11, 373.90, 514.68, 313.60, 410.21}
 var energy = model.EnergyConfigDaily{
 	Qs:                      29768,
@@ -71,8 +72,8 @@ func GetDeviceWorkTime(c *gin.Context) {
 
 	var result [9]int
 	for i := 0; i < 9; i++ {
-		//data, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[i], model.UnixToString(int(time.Now().Unix())))
-		data, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[i], "2023/02/20")
+		data, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[i], model.UnixToString(int(time.Now().Unix())))
+		//data, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[i], "2023/02/20")
 		for j := 0; j < len(data); j++ {
 			result[i] += int(data[j])
 		}
@@ -116,7 +117,8 @@ func GetLoadDetail(c *gin.Context) {
 
 func GetBoilerConfigDaily(c *gin.Context) {
 
-	a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, "2023/02/20")
+	a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, model.UnixToString(int(time.Now().Unix())))
+	//a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, "2023/02/20")
 	c.JSON(http.StatusOK, gin.H{
 		"实际": a,
 		"建议": energy.GetBoilerRunningNum(),
@@ -177,7 +179,12 @@ func GetDeviceWorkState(c *gin.Context) {
 	var stringResult [22]string
 
 	for i := 0; i < len(array); i++ {
+
+		//a, _ := model.GetOpcFloatList(array[i], "2023/02/20 13") //ZS
+		//a, _ := model.GetOpcFloatList(array[i], "2023/04/24 12")
+
 		a, _ := model.GetOpcFloatList(array[i], MakeTimeStr()) //ZS
+
 		if a[0] == 0 {
 			array2[i] = 0
 		} else {
