@@ -13,7 +13,7 @@ func EnergyConfigRouter(router *gin.RouterGroup) {
 	router.GET("energyConfig/getTankConfigDaily", energyConfig.GetTankConfigDaily)     //蓄热水箱逐时建议工况
 	router.GET("energyConfig/getDeviceWorkState", energyConfig.GetDeviceWorkState)     //设备运行状态 *
 
-	router.GET("energyConfig/getHeatStorageWeek", energyConfig.GetHeatStorageWeek) //未来七天再蓄热量
+	router.GET("energyConfig/getHeatStorageWeek", energyConfig.GetHeatStorageWeek) //未来七天再蓄热量  未来7天温度
 	router.GET("energyConfig/getElectricityWeek", energyConfig.GetElectricityWeek) //未来七天移峰电量
 	router.GET("energyConfig/getConfigWeek", energyConfig.GetConfigWeek)           //周工况调节
 

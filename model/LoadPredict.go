@@ -1,11 +1,10 @@
 package model
 
 import (
-	"context"
 	"encoding/json"
 	"energy/defs"
 	"energy/utils"
-	"go.mongodb.org/mongo-driver/bson"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +14,9 @@ import (
 )
 
 const (
-	getWeatherForecastUrl = "https://api.qweather.com/v7/weather/168h?location=101010800&key=2dee7efdb9a54d06830b1c3af13857db"
+	//getWeatherForecastUrl = "https://api.qweather.com/v7/weather/168h?location=101010800&key=2dee7efdb9a54d06830b1c3af13857db"
+	getWeatherForecastUrl = "http://11.10.21.201:7766/api/getData?index=predict"
+	getDataUrl            = "http://11.10.21.201:7766/api/getData"
 )
 
 type Input struct {
@@ -29,18 +30,22 @@ type Input struct {
 	Load          [168]float64 `json:"负荷"`
 }
 
+type DataStruct struct {
+	Data []float64
+}
+
 type Output struct {
 	Result [168]float64 `json:"result"`
 }
 
 type Forecast struct {
-	Hourly []Forecast2 `json:"hourly"`
+	Data []Forecast2
 }
 
 type Forecast2 struct {
-	Temp      string `json:"temp"`
-	Humidity  string `json:"humidity"`
-	WindSpeed string `json:"windSpeed"`
+	Temperature string
+	Humidity    string
+	Wind        string
 }
 
 type Atmosphere struct {
@@ -67,11 +72,14 @@ type Kekong struct {
 	D6   float64 `json:"d6"`
 }
 
+//当天凌晨跑
 func LoadPredict(index string) Output {
 	input := MakeInputBody(index)
 
+	fmt.Println(string(input))
+
 	data := Output{}
-	resp, err := http.Post(utils.LoadPredictRouter, "application/json", strings.NewReader(string(input)))
+	resp, err := http.Post(utils.LoadPredictRouter+"/d1_groups", "application/json", strings.NewReader(string(input)))
 	if err != nil {
 		log.Println(err)
 		return Output{}
@@ -79,6 +87,8 @@ func LoadPredict(index string) Output {
 	defer resp.Body.Close()
 	n, _ := ioutil.ReadAll(resp.Body)
 	_ = json.Unmarshal(n, &data)
+	fmt.Println("*")
+	fmt.Println(data)
 	return data
 }
 
@@ -112,9 +122,9 @@ func MakeInputBody(index string) []byte {
 	forecast := GetForecast()
 
 	for i := 24; i < 168; i++ {
-		input.Temperature[i], _ = strconv.ParseFloat(forecast.Hourly[i-24].Temp, 64)
-		input.Humidity[i], _ = strconv.Atoi(forecast.Hourly[i-24].Temp)
-		input.Wind[i], _ = strconv.ParseFloat(forecast.Hourly[i-24].Temp, 64)
+		input.Temperature[i], _ = strconv.ParseFloat(forecast.Data[i-24].Temperature, 64)
+		input.Humidity[i], _ = strconv.Atoi(forecast.Data[i-24].Humidity)
+		input.Wind[i], _ = strconv.ParseFloat(forecast.Data[i-24].Wind, 64)
 		input.Load[i] = 0
 		input.Radiation[i] = int(radiation[i%24])
 		input.RoomRate[i] = roomRate[i%24]
@@ -125,72 +135,28 @@ func MakeInputBody(index string) []byte {
 	return output
 }
 
-//访问办公网数据库
+// GetData 访问办公网数据库
+// index:哪种类型的数据 ||base：unix时间戳 ||zutuan：哪个组团
 func GetData(index string, base int, zutuan string) []float64 {
-	var array []float64
-	array = make([]float64, 24)
-	limit0, limit1 := FindIntervalDay(base)
-
-	type Update struct {
-		Id        int
-		UpdatedAt string
-		TableName string
+	data := DataStruct{}
+	resp, err := http.Get(getDataUrl + "?index=" + index + "&base=" + string(base) + "&zutuan=" + zutuan)
+	if err != nil {
+		log.Println(err)
+		return []float64{}
 	}
+	defer resp.Body.Close()
+	n, _ := ioutil.ReadAll(resp.Body)
+	_ = json.Unmarshal(n, &data)
 
-	switch index {
-	case "roomRate":
-		var devices []Kekong
-		data, _ := Db.Collection("keKong").Find(context.TODO(), bson.M{"time": bson.M{"$gte": limit0, "$lt": limit1}})
-		err = data.All(context.TODO(), &devices)
-		if zutuan == "D4组团" {
-			for i := 0; i < 24; i++ {
-				array[i] = devices[i].D4
-			}
-		} else if zutuan == "D5组团" {
-			for i := 0; i < 24; i++ {
-				array[i] = devices[i].D5
-			}
-		} else if zutuan == "D6组团" {
-			for i := 0; i < 24; i++ {
-				array[i] = devices[i].D6
-			}
-		} else {
-			for i := 0; i < 24; i++ {
-				array[i] = devices[i].D4
-			}
-		}
-	default:
-		var devices []Atmosphere
-		data, _ := Db.Collection("atmosphere").Find(context.TODO(), bson.M{"time": bson.M{"$gte": limit0, "$lt": limit1}})
-		err = data.All(context.TODO(), &devices)
-		if index == "temperature" {
-			for i := 0; i < 24; i++ {
-				array[i], _ = strconv.ParseFloat(devices[i].Result.Temperature.Value, 64)
-			}
-		} else if index == "humidity" {
-			for i := 0; i < 24; i++ {
-				array[i], _ = strconv.ParseFloat(devices[i].Result.Humidity.Value, 64)
-			}
-		} else if index == "radiation" {
-			for i := 0; i < 24; i++ {
-				array[i], _ = strconv.ParseFloat(devices[i].Result.Radiation.Value, 64)
-			}
-		} else if index == "wind" {
-			for i := 0; i < 24; i++ {
-				array[i], _ = strconv.ParseFloat(devices[i].Result.Wind.Value, 64)
-			}
-		}
-	}
-
-	return array
+	return data.Data
 }
 
 func GetLoad(index string, flag string) []float64 {
 	var load []float64
 
 	if flag == "today" {
-		//str := GetToday()
-		str := "2023/02/20"
+		str := GetToday()
+		//str := "2023/02/20"
 		switch index {
 		case "D1组团":
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
