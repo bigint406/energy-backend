@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
 	"github.com/gin-gonic/gin"
+	"strings"
+	"time"
 )
 
 type EnergyConfigDailyController struct {
@@ -32,7 +33,7 @@ var (
 // var loadDaily = [24]float64{206.54, 250.18, 214.85, 167.64, 182.05, 191.49, 211.57, 89.44, 27.73, 14.62, 7.68, 32.10, 32.35, 4.84, 33.30, 50.11, 37.97, 5.39, 22.92, 23.98, 87.57, 79.91, 89.96, 203.82}
 var loadDaily = [24]float64{369.94, 355.52, 324.63, 308.96, 289.64, 191.60, 333.00, 177.77, 215.62, 159.51, 165.07, 168.37, 235.35, 218.12, 337.49, 329.06, 140.63, 213.57, 282.12, 299.11, 373.90, 514.68, 313.60, 410.21}
 var energy = model.EnergyConfigDaily{
-	Qs:                      1000,
+	Qs:                      29768,
 	Tank_top_export_temp:    80,
 	Tank_bottom_export_temp: 80,
 	Vally_cost_time_start:   Vally_cost_time_start,
@@ -178,8 +179,12 @@ func GetDeviceWorkState(c *gin.Context) {
 	var stringResult [22]string
 
 	for i := 0; i < len(array); i++ {
+
 		//a, _ := model.GetOpcFloatList(array[i], "2023/02/20 13") //ZS
-		a, _ := model.GetOpcFloatList(array[i], "2023/04/24 12")
+		//a, _ := model.GetOpcFloatList(array[i], "2023/04/24 12")
+
+		a, _ := model.GetOpcFloatList(array[i], MakeTimeStr()) //ZS
+
 		if a[0] == 0 {
 			array2[i] = 0
 		} else {
@@ -216,4 +221,13 @@ func GetDeviceWorkState(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": stringResult,
 	})
+}
+
+func MakeTimeStr() string {
+	timeLayout := "2006-01-02 15:04:05"
+	timeStr := time.Unix(time.Now().Unix(), 0).Format(timeLayout)
+	a := strings.Split(timeStr, ":")
+	b := a[0]
+	b = strings.Replace(b, "-", "/", -1)
+	return b
 }
