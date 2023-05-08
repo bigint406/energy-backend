@@ -15,7 +15,7 @@ func loopTime(t time.Duration, callback func(time.Time, bool)) {
 		return
 	}
 	for {
-		now := time.Now().Add(-time.Hour * 8)
+		now := time.Now().Local().Add(-time.Hour * 8)
 		nano := time.Duration(now.UnixNano())
 		deltaT := nano/t*t + t - nano
 		next := now.Add(deltaT)
@@ -190,6 +190,7 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
 	} else {
+		log.Panicln("LouKong data miss")
 		log.Println(err)
 	}
 
@@ -203,6 +204,7 @@ func updateMinute(t time.Time, upsert bool) {
 		data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
 		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
 	} else {
+		log.Panicln("GA data miss")
 		log.Println(err)
 	}
 
