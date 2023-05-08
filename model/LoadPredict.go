@@ -157,7 +157,7 @@ func GetLoad(index string, flag string) []float64 {
 
 	if flag == "today" {
 		str := GetToday()
-		//str := "2023/02/20"
+		//str := "2023/05/08"
 		switch index {
 		case "D1组团":
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
@@ -196,6 +196,19 @@ func GetLoad(index string, flag string) []float64 {
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, GetYesterday())
 		}
 	}
+
+	if len(load) < 24 {
+		var load2 []float64
+		load2 = make([]float64, 24)
+		for i := 0; i < len(load); i++ {
+			load2[i] = load[i]
+		}
+		for i := len(load); i < 24; i++ {
+			load2[i] = 0
+		}
+		return load2
+	}
+
 	return load
 }
 
@@ -235,6 +248,8 @@ func GetToday() string {
 	timeLayout := "2006-01-02 15:04:05"
 	timeStr := time.Unix(time.Now().Unix(), 0).Format(timeLayout)
 	a := strings.Split(timeStr, " ")
+	a[0] = strings.Replace(a[0], "-", "/", 2)
+
 	return a[0]
 }
 
@@ -242,6 +257,8 @@ func GetYesterday() string {
 	timeLayout := "2006-01-02 15:04:05"
 	timeStr := time.Unix(time.Now().Unix()-86400, 0).Format(timeLayout)
 	a := strings.Split(timeStr, " ")
+	a[0] = strings.Replace(a[0], "-", "/", 2)
+
 	return a[0]
 }
 

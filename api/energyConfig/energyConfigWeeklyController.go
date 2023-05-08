@@ -2,8 +2,10 @@ package energyConfig
 
 import (
 	"energy/model"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -51,12 +53,18 @@ var energyWeekly = model.EnergyConfigWeekly{
 	Week_load_prediction: loadWeekly,
 }
 
-//TODO:未来一周的温度
 func GetHeatStorageWeek(c *gin.Context) {
 	a := energyWeekly.GetHeatStorageAagin()
-	b := []int{4, 4, 2, 5, 6, 7, 6}
+	//b := []int{4, 4, 2, 5, 6, 7, 6}
+	b := Get7dTemp()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
+
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+		b[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", b[i]), 64)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"再蓄热量": a,
 		"室外温度": b,
@@ -66,9 +74,16 @@ func GetHeatStorageWeek(c *gin.Context) {
 
 func GetElectricityWeek(c *gin.Context) {
 	a := energyWeekly.GetPeakTransferPower(energyWeekly.GetHeatStorageAagin())
-	b := []int{4, 4, 2, 5, 6, 7, 6}
+	//b := []int{4, 4, 2, 5, 6, 7, 6}
+	b := Get7dTemp()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
+
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+		b[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", b[i]), 64)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"移峰电量": a,
 		"室外温度": b,
@@ -92,6 +107,9 @@ func GetEnergySaving(c *gin.Context) {
 	//a := []float64{103, 127, 113, 145, 110, 87, 105}
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": a,
 		"x轴":   x,
@@ -102,6 +120,9 @@ func GetRunningCost(c *gin.Context) {
 	a := energyWeekly.GetRunningCost()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": a,
 		"x轴":   x,
@@ -113,6 +134,11 @@ func GetCarbonEmission(c *gin.Context) {
 	//a := []float64{54, 43, 47, 51, 61, 41, 52}
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
+
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": a,
 		"x轴":   x,
@@ -127,4 +153,22 @@ func MakeX() []string {
 		model.GetDay(time.Now().Unix() + 86400*4),
 		model.GetDay(time.Now().Unix() + 86400*5),
 		model.GetDay(time.Now().Unix() + 86400*6)}
+}
+
+func Get7dTemp() []float64 {
+	forecast := model.GetForecast()
+	var temp []float64
+	var sum, num float64
+	temp = make([]float64, 7)
+
+	for i := 0; i < 7; i++ {
+		sum = 0
+		num = 0
+		for j := 0; j < 24; j++ {
+			num, _ = strconv.ParseFloat(forecast.Data[i*24+j].Temperature, 64)
+			sum += num
+		}
+		temp[i] = sum / 24
+	}
+	return temp
 }
