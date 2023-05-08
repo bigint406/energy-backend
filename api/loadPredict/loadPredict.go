@@ -61,7 +61,8 @@ func GetComparison(c *gin.Context) {
 
 func GetRealLoad(c *gin.Context) {
 	index := c.Query("index")
-	a := model.GetLoad(index, "today")
+	flag := c.Query("flag")
+	a := model.GetLoad(index, flag)
 
 	c.JSON(http.StatusOK, gin.H{
 		"真实值": a,
