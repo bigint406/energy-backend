@@ -190,7 +190,7 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
 	} else {
-		log.Panicln("LouKong data miss")
+		log.Println("LouKong data miss")
 		log.Println(err)
 	}
 
@@ -204,7 +204,7 @@ func updateMinute(t time.Time, upsert bool) {
 		data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
 		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
 	} else {
-		log.Panicln("GA data miss")
+		log.Println("GA data miss")
 		log.Println(err)
 	}
 
