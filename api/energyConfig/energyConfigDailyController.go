@@ -116,7 +116,9 @@ func GetLoadDetail(c *gin.Context) {
 
 func GetBoilerConfigDaily(c *gin.Context) {
 
-	a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, model.UnixToString(int(time.Now().Unix())))
+	//a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, model.UnixToString(int(time.Now().Unix())))
+	a, _ := model.GetResultFloatNoTime(defs.EnergyBoilerRunningNum)
+
 	//a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, "2023/02/20")
 	c.JSON(http.StatusOK, gin.H{
 		"实际": a,
