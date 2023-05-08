@@ -149,8 +149,8 @@ func CalcPumpEHR(hourStr string) []float64 {
 }
 
 func CalcHeatConsumptionHour(hourStr string) []float64 {
-	tables := []string{defs.GroupHeatConsumptionDay1, defs.GroupHeatConsumptionDay2, defs.GroupHeatConsumptionDay3,
-		defs.GroupHeatConsumptionDay4, defs.GroupHeatConsumptionDay5, defs.GroupHeatConsumptionDay6, defs.GroupHeatConsumptionDayPubS}
+	tables := []string{defs.GroupHeatConsumptionHour1, defs.GroupHeatConsumptionHour2, defs.GroupHeatConsumptionHour3,
+		defs.GroupHeatConsumptionHour4, defs.GroupHeatConsumptionHour5, defs.GroupHeatConsumptionHour6, defs.GroupHeatConsumptionHourPubS}
 	ans := make([]float64, len(tables))
 	for i, v := range tables {
 		ans[i] = SumOpcResultList(v, hourStr)
@@ -167,7 +167,7 @@ var pumpAlarmOpcList = map[string]defs.Alarm{
 	"ZLZ.T_ALARM_P6": {"6#空调冷水二次泵", "报警"},
 }
 
-//报警
+// 报警
 func UpdatePumpAlarm(hourStr string, min int, t time.Time) {
 	var oldList defs.MongoAlarmList
 	MongoResult.FindOne(context.TODO(), bson.D{{"name", defs.ColdAlarmToday}, {"time", hourStr}}).Decode(&oldList)
