@@ -139,7 +139,8 @@ func MakeInputBody(index string) []byte {
 // index:哪种类型的数据 ||base：unix时间戳 ||zutuan：哪个组团
 func GetData(index string, base int, zutuan string) []float64 {
 	data := DataStruct{}
-	resp, err := http.Get(getDataUrl + "?index=" + index + "&base=" + string(base) + "&zutuan=" + zutuan)
+	baseString := strconv.Itoa(base)
+	resp, err := http.Get(getDataUrl + "?index=" + index + "&base=" + baseString + "&zutuan=" + zutuan)
 	if err != nil {
 		log.Println(err)
 		return []float64{}
