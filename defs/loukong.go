@@ -1,11 +1,10 @@
 package defs
 
 type LouHeat struct {
-	Name   string `bson:"name"`
-	Status string `bson:"status"`
-	CF     string `bson:"CF"`
-	InT    string `bson:"inT"`
-	OutT   string `bson:"outT"`
+	Name string `bson:"name"`
+	CF   string `bson:"CF"`
+	InT  string `bson:"inT"`
+	OutT string `bson:"outT"`
 }
 
 type LouHeatList struct {

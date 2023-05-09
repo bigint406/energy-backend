@@ -15,7 +15,7 @@ func loopTime(t time.Duration, callback func(time.Time, bool)) {
 		return
 	}
 	for {
-		now := time.Now().Local().Add(-time.Hour * 8)
+		now := time.Now().Add(-time.Minute * 10)
 		nano := time.Duration(now.UnixNano())
 		deltaT := nano/t*t + t - nano
 		next := now.Add(deltaT)
@@ -159,7 +159,7 @@ func updateHour(t time.Time) {
 
 // 更新上一分钟的数据。如果仅仅是导入过去数据upsert设为false，需要更新页面设为true
 func updateMinute(t time.Time, upsert bool) {
-	lastMinTime := t.Add(-time.Minute * 10)
+	lastMinTime := t
 	lastMin := lastMinTime.Minute()
 	lastMinDayStr := fmt.Sprintf("%04d/%02d/%02d", lastMinTime.Year(), lastMinTime.Month(), lastMinTime.Day())
 	lastMinHourStr := fmt.Sprintf("%s %02d", lastMinDayStr, lastMinTime.Hour())
@@ -190,6 +190,7 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
 	} else {
+		log.Println(lastMinStr)
 		log.Println("LouKong data miss")
 		log.Println(err)
 	}
@@ -204,6 +205,7 @@ func updateMinute(t time.Time, upsert bool) {
 		data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
 		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
 	} else {
+		log.Println(lastMinStr)
 		log.Println("GA data miss")
 		log.Println(err)
 	}
@@ -318,8 +320,7 @@ func FailOnError(err error, msg string) {
 
 // 从t1到t2计算数据，每分钟更新一次
 func UpdateData(t1 time.Time, t2 time.Time) {
-	tend := t2.Add(time.Minute)
-	for t := t1.Add(time.Minute); t.Before(tend); t = t.Add(time.Minute) {
+	for t := t1; t.Before(t2); t = t.Add(time.Minute) {
 		updateMinute(t, false)
 	}
 	log.Print("Update Complete")
