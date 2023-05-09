@@ -99,9 +99,6 @@ func CalcPumpHeat(data *defs.LouHeatList) []float64 {
 	const L = 7
 	var heat [L]float64
 	for _, v := range data.Info {
-		if v.Status != "0" {
-			continue
-		}
 		inT, err := strconv.ParseFloat(v.InT, 64)
 		if err != nil {
 			continue
@@ -113,6 +110,11 @@ func CalcPumpHeat(data *defs.LouHeatList) []float64 {
 		CF, err := strconv.ParseFloat(v.CF, 64)
 		if err != nil {
 			continue
+		}
+		if inT < OutT {
+			tempT := inT
+			inT = OutT
+			OutT = tempT
 		}
 		heat[heatMap[v.Name]] += (inT - OutT) * CF * 4200000 / 60 //单位为J
 	}
