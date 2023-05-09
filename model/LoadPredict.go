@@ -157,7 +157,7 @@ func GetLoad(index string, flag string) []float64 {
 
 	if flag == "today" {
 		str := GetToday()
-		//str := "2023/05/08"
+		//str := "2023/03/18"
 		switch index {
 		case "D1组团":
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
@@ -195,6 +195,29 @@ func GetLoad(index string, flag string) []float64 {
 		case "公共组团北区":
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, GetYesterday())
 		}
+	} else {
+		switch index {
+		case "D1组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, flag)
+		case "D2组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay2, flag)
+		case "D3组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay3, flag)
+		case "D4组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay4, flag)
+		case "D5组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay5, flag)
+		case "D6组团":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay6, flag)
+		case "公共组团南区":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, flag)
+		case "公共组团北区":
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, flag)
+		}
+	}
+
+	for i := 0; i < len(load); i++ {
+		load[i] = load[i] / 3600000
 	}
 
 	if len(load) < 24 {

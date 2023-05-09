@@ -13,5 +13,4 @@ func LoadPredictRouter(router *gin.RouterGroup) {
 	router.GET("loadPredict/forecast", loadPredict.GetLoadPredict) //预测值
 	router.GET("loadPredict/temp", loadPredict.GetTemp)            //温度
 	router.GET("loadPredict/test", loadPredict.Test)               //
-	// router.GET("loadPredict/data", loadPredict.GetData)            //
 }
