@@ -191,7 +191,7 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
 	} else {
 		log.Println(lastMinStr)
-		log.Println("LouKong data miss")
+		log.Println("heat data miss")
 		log.Println(err)
 	}
 
@@ -207,6 +207,16 @@ func updateMinute(t time.Time, upsert bool) {
 	} else {
 		log.Println(lastMinStr)
 		log.Println("GA data miss")
+		log.Println(err)
+	}
+
+	var HData defs.LouH
+	Herr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "H"}}).Decode(&HData)
+	if Herr == nil {
+
+	} else {
+		log.Println(lastMinStr)
+		log.Println("H data miss")
 		log.Println(err)
 	}
 
