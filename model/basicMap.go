@@ -2,6 +2,7 @@ package model
 
 import (
 	"energy/defs"
+	"strconv"
 )
 
 func CalcBasicMapHallwayTemp(data *defs.LouH) []float64 {
@@ -16,9 +17,20 @@ func CalcBasicMapHallwayTemp(data *defs.LouH) []float64 {
 	//没有D6组团的数据源，所以zutuan[5]是空的
 	zutuan[6] = []*string{&data.GS_XRH_S_B1_2.HF_T, &data.GS_XRH_S_B2_1.HF_T, &data.GS_XRH_S_L3_1.HF_T, &data.GS_XRH_S_L3_2.HF_T, &data.GS_XRH_S_L4_1.HF_T} //南区
 	zutuan[7] = []*string{&data.GN_XRH_N_L2_1.HF_T}                                                                                                         //北区
-	// HT, err := strconv.ParseFloat(data., 64)
-	// if err != nil {
-	// 	return 0
-	// }
+
+	for i := 0; i < 8; i++ {
+		cnt := 0.
+		ans[i] = 0
+		for j := 0; j < len(zutuan[i]); j++ {
+			num, err := strconv.ParseFloat(*zutuan[i][j], 64)
+			if err != nil && num != 0 {
+				cnt++
+				ans[i] += num
+			}
+		}
+		if cnt != 0 {
+			ans[i] /= cnt
+		}
+	}
 	return ans
 }

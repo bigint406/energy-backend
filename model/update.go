@@ -49,6 +49,10 @@ func updateMonth(t time.Time) {
 	MongoUpdateList(yearStr, month, defs.SolarWaterHeatEfficiencyYear, data)
 	data = CalcSolarWaterGuaranteeRateMonth(monthStr) //保证率
 	MongoUpdateList(yearStr, month, defs.SolarWaterGuaranteeRateYear, data)
+
+	//太阳能发电
+	data = SumOpcResultList(defs.SolarElecGenMonth, monthStr) //太阳能发电
+	MongoUpdateList(yearStr, month, defs.SolarElecGenYear, data)
 }
 
 // 更新本日的数据
@@ -77,13 +81,17 @@ func updateDay(t time.Time) {
 	data = CalcSolarWaterGuaranteeRateDay(dayStr) //保证率
 	MongoUpdateList(monthStr, day, defs.SolarWaterGuaranteeRateMonth, data)
 
+	//太阳能发电
+	data = SumOpcResultList(defs.SolarElecGenDay, dayStr) //发电量
+	MongoUpdateList(monthStr, day, defs.SolarElecGenMonth, data)
+
 	if t.Add(time.Hour*24).Month() != t.Month() {
 		updateMonth(t)
 	}
 }
 
 // 更新本小时的数据
-func updateHour(t time.Time) {
+func updateHour(t time.Time, upsert bool) {
 	hour := t.Hour()
 	dayStr := fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day())
 	hourStr := fmt.Sprintf("%s %02d", dayStr, hour)
@@ -151,6 +159,15 @@ func updateHour(t time.Time) {
 	MongoUpdateList(dayStr, hour, defs.SolarWaterBoilerPowerConsumptionDay, q2)
 	data = CalcSolarWaterGuaranteeRate(q1, q2) //保证率
 	MongoUpdateList(dayStr, hour, defs.SolarWaterGuaranteeRateDay, data)
+
+	//太阳能发电
+	data = CalcSolarElecGenHour(hourStr) //本小时发电量
+	MongoUpdateList(dayStr, hour, defs.SolarElecGenDay, data)
+
+	if upsert {
+		data = SumOpcResultList(defs.SolarElecGenDay, dayStr) //发电量
+		MongoUpsertOne(defs.SolarElecGenToday, data)
+	}
 
 	if hour == 23 {
 		updateDay(t)
@@ -222,12 +239,20 @@ func updateMinute(t time.Time, upsert bool) {
 
 	//实时展示数据
 	if upsert {
+		var dataList []float64
+		//基础设施地图
+		if Herr == nil {
+			dataList = CalcBasicMapHallwayTemp(&HData)
+			for i := 0; i < len(dataList); i++ {
+				MongoUpsertOne(defs.GroupHallwayTemp[i], dataList[i])
+			}
+		}
 		//能源站
 		data, _ = CalcEnergyOnlineRate(lastMinHourStr) //能源站设备在线率
 		MongoUpsertOne(defs.EnergyOnlineRate, data)
 		data = CalcEnergyBoilerPower(lastMinHourStr, lastMin) //能源站锅炉总功率
 		MongoUpsertOne(defs.EnergyBoilerPower, data)
-		dataList := CalcEnergyBoilerEnergyCost(lastMinHourStr) //本小时各锅炉能耗(单位kW·h)
+		dataList = CalcEnergyBoilerEnergyCost(lastMinHourStr) //本小时各锅炉能耗(单位kW·h)
 		q23 := dataList[0] + dataList[1] + dataList[2] + dataList[3]
 		dataList = CalcEnergyBoilerEnergyCostToday(lastMinDayStr, dataList) //今日各锅炉能耗
 		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday1, dataList[0])
@@ -307,7 +332,7 @@ func updateMinute(t time.Time, upsert bool) {
 	}
 
 	if lastMinTime.Minute() == 59 {
-		updateHour(lastMinTime)
+		updateHour(lastMinTime, upsert)
 	}
 }
 

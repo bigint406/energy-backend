@@ -1,15 +1,23 @@
 package defs
 
 var EnergyRunningTimeDay = []string{"energy_boiler_running_time_day1", //能源站锅炉1当日各小时运行时间（分钟）
-	"energy_boiler_running_time_day2", //能源站锅炉2当日各小时运行时间（分钟）
-	"energy_boiler_running_time_day3", //能源站锅炉3当日各小时运行时间（分钟）
-	"energy_boiler_running_time_day4", //能源站锅炉4当日各小时运行时间（分钟）
-	"energy_GRB_running_time_day1",    //能源站供热泵1当日各小时运行时间（分钟）
-	"energy_GRB_running_time_day2",    //能源站供热泵2当日各小时运行时间（分钟）
-	"energy_GRB_running_time_day3",    //能源站供热泵3当日各小时运行时间（分钟）
-	"energy_tank_running_time_day1",   //能源站水箱1当日各小时运行时间（分钟）
-	"energy_tank_running_time_day2"}   //能源站水箱2当日各小时运行时间（分钟）
-//计算结果表名
+							"energy_boiler_running_time_day2", //能源站锅炉2当日各小时运行时间（分钟）
+							"energy_boiler_running_time_day3", //能源站锅炉3当日各小时运行时间（分钟）
+							"energy_boiler_running_time_day4", //能源站锅炉4当日各小时运行时间（分钟）
+							"energy_GRB_running_time_day1",    //能源站供热泵1当日各小时运行时间（分钟）
+							"energy_GRB_running_time_day2",    //能源站供热泵2当日各小时运行时间（分钟）
+							"energy_GRB_running_time_day3",    //能源站供热泵3当日各小时运行时间（分钟）
+							"energy_tank_running_time_day1",   //能源站水箱1当日各小时运行时间（分钟）
+							"energy_tank_running_time_day2"}   //能源站水箱2当日各小时运行时间（分钟）
+var GroupHallwayTemp = []string{"group_hallway_temp1", //1组团走廊温度
+	"group_hallway_temp2",      //2组团走廊温度
+	"group_hallway_temp3",      //3组团走廊温度
+	"group_hallway_temp4",      //4组团走廊温度
+	"group_hallway_temp5",      //5组团走廊温度
+	"group_hallway_temp6",      //6组团走廊温度
+	"group_hallway_temp_pub_s", //公共组团南区走廊温度
+	"group_hallway_temp_pub_n"} //公共组团北区走廊温度
+// 计算结果表名
 const (
 	GroupHeatConsumptionHour1    = "group_heat_consumption_hour_1"     //1组团耗热量当小时每分钟
 	GroupHeatConsumptionHour2    = "group_heat_consumption_hour_2"     //2组团耗热量当小时每分钟
@@ -110,9 +118,14 @@ const (
 	SolarWaterGuaranteeRateDay            = "solar_water_guarantee_rate"                 //太阳能热水保证率当日每小时
 	SolarWaterGuaranteeRateMonth          = "solar_water_guarantee_month"                //太阳能热水保证率每月各天
 	SolarWaterGuaranteeRateYear           = "solar_water_guarantee_year"                 //太阳能热水保证率每年各月
+
+	SolarElecGenToday = "solar_elec_gen_today" //太阳能发电今日
+	SolarElecGenDay   = "solar_elec_gen_day"   //太阳能发电当日每小时
+	SolarElecGenMonth = "solar_elec_gen_month" //太阳能发电当月每日
+	SolarElecGenYear  = "solar_elec_gen_year"  //太阳能发电当年每月
 )
 
-//其它常数
+// 其它常数
 const (
 	ColdMachine1 = "Z_LX1"
 	ColdMachine2 = "Z_LX2"
