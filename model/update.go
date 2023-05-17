@@ -129,6 +129,8 @@ func updateHour(t time.Time, upsert bool) {
 	q := q1 + q2 + q3
 	MongoUpdateList(dayStr, hour, defs.ColdEnergyCostDay, q) //耗能
 	//制冷效率（流量没拿到）
+	data = CalcColdEfficiency(hourStr, q)
+
 	//碳排
 	data = CalcColdCarbonHour(q)
 	MongoUpdateList(dayStr, hour, defs.ColdCarbonDay, data)
