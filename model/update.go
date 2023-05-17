@@ -244,7 +244,7 @@ func updateMinute(t time.Time, upsert bool) {
 		var dataList []float64
 		//基础设施地图
 		if Herr == nil {
-			dataList = CalcBasicMapHallwayTemp(&HData)
+			dataList = CalcBasicMapHallwayTemp(&HData.Info)
 			for i := 0; i < len(dataList); i++ {
 				MongoUpsertOne(defs.GroupHallwayTemp[i], dataList[i])
 			}
