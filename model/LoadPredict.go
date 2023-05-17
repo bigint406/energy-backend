@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"energy/defs"
 	"energy/utils"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -76,8 +75,6 @@ type Kekong struct {
 func LoadPredict(index string) Output {
 	input := MakeInputBody(index)
 
-	fmt.Println(string(input))
-
 	data := Output{}
 	resp, err := http.Post(utils.LoadPredictRouter+"/d1_groups", "application/json", strings.NewReader(string(input)))
 	if err != nil {
@@ -87,8 +84,7 @@ func LoadPredict(index string) Output {
 	defer resp.Body.Close()
 	n, _ := ioutil.ReadAll(resp.Body)
 	_ = json.Unmarshal(n, &data)
-	fmt.Println("*")
-	fmt.Println(data)
+
 	return data
 }
 
