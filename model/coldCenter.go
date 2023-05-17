@@ -196,8 +196,9 @@ func CalcColdEnergyCost(hourStr string, machineId string) float64 { //制冷站�
 	return ans
 }
 
-func ColdEfficiency(hourStr string, machineId string) float64 {
-	//差制冷量所需的流量数据
+func CalcColdEfficiency(hourStr string, q float64) float64 {
+	//效率：制冷量除以耗电量
+
 	return 0.0
 }
 
@@ -233,7 +234,7 @@ var coldAlarmOpcList = map[string]defs.Alarm{
 	"ZLZ.Z_L_%E5%BD%93%E5%89%8D%E5%81%9C%E6%9C%BA%E6%95%85%E9%9A%9C": {"螺杆机", "停机故障"},
 }
 
-//报警
+// 报警
 func UpdateColdAlarm(hourStr string, min int, t time.Time) {
 	var oldList defs.MongoAlarmList
 	MongoResult.FindOne(context.TODO(), bson.D{{"name", defs.ColdAlarmToday}, {"time", hourStr}}).Decode(&oldList)

@@ -62,3 +62,46 @@ type LouSolarWaterStatus struct {
 type LouSolarWaterSystem struct {
 	JRQ_T string `bson:"JRQ_T"`
 }
+
+// H的数据，根据回风温度估测走廊温度
+type LouH struct {
+	Info LouHInfo `bson:"info"`
+}
+
+type LouHInfo struct {
+	//D1组团
+	D1_XRH_L1_2 LouHXRH `bson:"D1_XRH_L1_2"`
+	D1_XRH_L2_1 LouHXRH `bson:"D1_XRH_L2_1"`
+	D1_XRH_L2_2 LouHXRH `bson:"D1_XRH_L2_2"`
+	D1_XRH_L2_3 LouHXRH `bson:"D1_XRH_L2_3"`
+	//D2组团
+	D2_XRH_B1_1 LouHXRH `bson:"D2_XRH_B1_1"`
+	D2_XRH_B1_2 LouHXRH `bson:"D2_XRH_B1_2"`
+	D2_XRH_B1_3 LouHXRH `bson:"D2_XRH_B1_3"`
+	D2_XRH_B1_4 LouHXRH `bson:"D2_XRH_B1_4"`
+	D2_XRH_B1_5 LouHXRH `bson:"D2_XRH_B1_5"`
+	D2_XRH_B1_6 LouHXRH `bson:"D2_XRH_B1_6"`
+	D2_XRH_B1_7 LouHXRH `bson:"D2_XRH_B1_7"`
+	D2_XRH_B1_8 LouHXRH `bson:"D2_XRH_B1_8"`
+	//D3组团
+	D3_XHR_L2_1 LouHXRH `bson:"D3_XHR_L2_1"`
+	D3_XRH_L2_2 LouHXRH `bson:"D3_XRH_L2_2"`
+	D3_XRH_L3_1 LouHXRH `bson:"D3_XRH_L3_1"`
+	//D5组团
+	D5_XRH_L2_1 LouHXRH `bson:"D5_XRH_L2_1"`
+	D5_XRH_L3_1 LouHXRH `bson:"D5_XRH_L3_1"`
+	D5_XRH_B1_1 LouHXRH `bson:"D5_XRH_B1_1"`
+	//南区
+	GS_XRH_S_B1_2 LouHXRH `bson:"GS_XRH_S_B1_2"`
+	GS_XRH_S_B2_1 LouHXRH `bson:"GS_XRH_S_B2_1"`
+	GS_XRH_S_L3_1 LouHXRH `bson:"GS_XRH_S_L3_1"`
+	GS_XRH_S_L3_2 LouHXRH `bson:"GS_XRH_S_L3_2"`
+	GS_XRH_S_L4_1 LouHXRH `bson:"GS_XRH_S_L4_1"`
+	//北区
+	GN_XRH_N_L2_1 LouHXRH `bson:"GN_XRH_N_L2_1"`
+}
+
+// H中的组团热回收新风机组
+type LouHXRH struct {
+	HF_T string `bson:"HF_T"`
+}
