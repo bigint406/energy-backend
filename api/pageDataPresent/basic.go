@@ -51,6 +51,14 @@ func BasicDataSet(c *gin.Context) {
 		d, _ := model.GetResultFloatNoTime(v)
 		ans[v] = d
 	}
+	for _, v := range ubody.Data.BasicDataListMonth {
+		d, _ := model.GetResultFloatList(v, ubody.MonthStr)
+		ans[v] = d
+	}
+	for _, v := range ubody.Data.BasicDataListYear {
+		d, _ := model.GetResultFloatList(v, ubody.YearStr)
+		ans[v] = d
+	}
 	for _, v := range ubody.Data.BasicDataListDay {
 		d, _ := model.GetResultFloatList(v, ubody.DayStr)
 		ans[v] = d

@@ -180,7 +180,7 @@ func CalcEnergyHeatStorageAndRelease(hourStr string) float64 {
 	for left = 0; left < maxLen; left++ {
 		leftTempNum := 0
 		for i := 0; i < 11; i++ {
-			if !ok1[i] || len(t1[i]) <= left || t1[i][left] == 0 {
+			if !ok1[i] || len(t1[i]) <= left || (t1[i][left] < 1e-6 && t1[i][left] > -1e-6) {
 				continue
 			}
 			leftTemp += t1[i][left]
@@ -193,13 +193,13 @@ func CalcEnergyHeatStorageAndRelease(hourStr string) float64 {
 	}
 	right := 0
 	rightTemp := 0.0
-	for right = maxLen; right > left; right-- {
+	for right = maxLen - 1; right > left; right-- {
 		rightTempNum := 0
 		for i := 0; i < 11; i++ {
-			if !ok1[i] || len(t1[i]) <= right || t1[i][right] == 0 {
+			if !ok1[i] || len(t1[i]) <= right || (t1[i][right] < 1e-6 && t1[i][right] > -1e-6) {
 				continue
 			}
-			rightTemp += t1[i][left]
+			rightTemp += t1[i][right]
 			rightTempNum++
 		}
 		if rightTempNum != 0 {
