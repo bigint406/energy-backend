@@ -129,6 +129,8 @@ func updateHour(t time.Time, upsert bool) {
 	q := q1 + q2 + q3
 	MongoUpdateList(dayStr, hour, defs.ColdEnergyCostDay, q) //耗能
 	//制冷效率（流量没拿到）
+	data = CalcColdEfficiency(hourStr, q)
+
 	//碳排
 	data = CalcColdCarbonHour(q)
 	MongoUpdateList(dayStr, hour, defs.ColdCarbonDay, data)
@@ -242,7 +244,7 @@ func updateMinute(t time.Time, upsert bool) {
 		var dataList []float64
 		//基础设施地图
 		if Herr == nil {
-			dataList = CalcBasicMapHallwayTemp(&HData)
+			dataList = CalcBasicMapHallwayTemp(&HData.Info)
 			for i := 0; i < len(dataList); i++ {
 				MongoUpsertOne(defs.GroupHallwayTemp[i], dataList[i])
 			}

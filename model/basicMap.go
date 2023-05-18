@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func CalcBasicMapHallwayTemp(data *defs.LouH) []float64 {
+func CalcBasicMapHallwayTemp(data *defs.LouHInfo) []float64 {
 	ans := make([]float64, 8)
 	zutuan := make([][]*string, 8)
 	zutuan[0] = []*string{&data.D1_XRH_L1_2.HF_T, &data.D1_XRH_L2_1.HF_T, &data.D1_XRH_L2_2.HF_T, &data.D1_XRH_L2_3.HF_T}
@@ -23,12 +23,12 @@ func CalcBasicMapHallwayTemp(data *defs.LouH) []float64 {
 		ans[i] = 0
 		for j := 0; j < len(zutuan[i]); j++ {
 			num, err := strconv.ParseFloat(*zutuan[i][j], 64)
-			if err != nil && num != 0 {
+			if err == nil && num > 1e-6 {
 				cnt++
 				ans[i] += num
 			}
 		}
-		if cnt != 0 {
+		if cnt > 1e-6 {
 			ans[i] /= cnt
 		}
 	}

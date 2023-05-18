@@ -65,8 +65,12 @@ type LouSolarWaterSystem struct {
 
 // H的数据，根据回风温度估测走廊温度
 type LouH struct {
+	Info LouHInfo `bson:"info"`
+}
+
+type LouHInfo struct {
 	//D1组团
-	D1_XRH_L1_2 LouHXRH `bson:"D1_XRH_L2_3"`
+	D1_XRH_L1_2 LouHXRH `bson:"D1_XRH_L1_2"`
 	D1_XRH_L2_1 LouHXRH `bson:"D1_XRH_L2_1"`
 	D1_XRH_L2_2 LouHXRH `bson:"D1_XRH_L2_2"`
 	D1_XRH_L2_3 LouHXRH `bson:"D1_XRH_L2_3"`
