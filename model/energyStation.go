@@ -210,7 +210,7 @@ func CalcEnergyHeatStorageAndRelease(hourStr string) float64 {
 	if right == left {
 		return 0
 	}
-	return (rightTemp - leftTemp) * 5.6 * 100 * 1e3 * 4.2 * 1e3 //单位J
+	return (rightTemp - leftTemp) / 100 * 5.6 * 100 * 1e3 * 4.2 * 1e3 //单位J，除以100是这里的温度是放大了100倍的
 }
 
 // 能源站各锅炉能耗
@@ -293,6 +293,9 @@ func CalcEnergyBoilerEfficiency(q1 float64, q2 float64) float64 {
 func CalcWatertankEfficiency(q1 float64, hourStr string) float64 {
 	Tinitial := 0.0
 	Taver := 0.0
+	if q1 == 0 {
+		return 0
+	}
 	Tout, ok := GetOpcFloatList("ZLZ.OUTPUT_T3", hourStr) //供水温度
 	if !ok {
 		return 0
