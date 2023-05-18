@@ -98,7 +98,7 @@ func updateHour(t time.Time, upsert bool) {
 	var data float64
 
 	q3 := CalcEnergyHeatStorageAndRelease(hourStr) //蓄放热量统计，正值蓄热，负值放热
-	MongoUpdateList(dayStr, hour, defs.EnergyHeatStorageAndRelease, data)
+	MongoUpdateList(dayStr, hour, defs.EnergyHeatStorageAndRelease, q3)
 	q1 := CalcEnergyBoilerHeatSupply(hourStr)     //能源站锅炉供热量
 	q2List := CalcEnergyBoilerEnergyCost(hourStr) //各锅炉能耗(单位kW·h)
 	q2 := q2List[0] + q2List[1] + q2List[2] + q2List[3]
