@@ -119,7 +119,6 @@ const (
 	SolarWaterGuaranteeRateMonth          = "solar_water_guarantee_month"                //太阳能热水保证率每月各天
 	SolarWaterGuaranteeRateYear           = "solar_water_guarantee_year"                 //太阳能热水保证率每年各月
 
-	SolarElecGenToday = "solar_elec_gen_today" //太阳能发电今日
 	SolarElecGenDay   = "solar_elec_gen_day"   //太阳能发电当日每小时
 	SolarElecGenMonth = "solar_elec_gen_month" //太阳能发电当月每日
 	SolarElecGenYear  = "solar_elec_gen_year"  //太阳能发电当年每月
