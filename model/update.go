@@ -168,11 +168,6 @@ func updateHour(t time.Time, upsert bool) {
 	data = CalcSolarElecGenHour(hourStr) //本小时发电量
 	MongoUpdateList(dayStr, hour, defs.SolarElecGenDay, data)
 
-	if upsert {
-		data = SumOpcResultList(defs.SolarElecGenDay, dayStr) //发电量
-		MongoUpsertOne(defs.SolarElecGenToday, data)
-	}
-
 	if hour == 23 {
 		updateDay(t, upsert)
 	}
