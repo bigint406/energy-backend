@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -12,6 +13,8 @@ func GetLoadStatistic(c *gin.Context) {
 	index := c.Query("index")
 	a := model.GetLoad(index, "today")
 	b := model.GetData("temperature", int(time.Now().Unix()), "")
+
+	//b := []float64{10.2, 9.4, 8.3, 8.3, 9.7, 10.1, 11.5, 12.4, 13.8, 16.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	var x []int
 	/*
 		var a, b, x []int
@@ -21,6 +24,9 @@ func GetLoadStatistic(c *gin.Context) {
 			b = []int{-2, -3, -3, -4, -4, -2, -2, -1, 1, 4, 7, 10, 12, 13, 15, 10, 7, 6, 5, 4, 4, 3, 2, 1, 0, -1}
 		}
 	*/
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+	}
 
 	x = make([]int, 24)
 	for i := 0; i < 24; i++ {
@@ -38,7 +44,18 @@ func GetComparison(c *gin.Context) {
 	index := c.Query("index")
 	var x []int
 	a := model.GetLoad(index, "today")
-	b := model.LoadPredict(index)
+	data := model.LoadPredict(index)
+
+	var b []float64
+	b = make([]float64, 24)
+	for i := 0; i < 24; i++ {
+		b[i] = data.Result[i]
+	}
+
+	for i := 0; i < len(a); i++ {
+		a[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", a[i]), 64)
+		b[i], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", b[i]), 64)
+	}
 
 	/*
 		if index == "D1组团" {

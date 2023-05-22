@@ -74,9 +74,27 @@ type Kekong struct {
 //当天凌晨跑
 func LoadPredict(index string) Output {
 	input := MakeInputBody(index)
+	var URL string
+	if index == "D1组团" {
+		URL = utils.LoadPredictRouter + "/d1_groups"
+	} else if index == "D2组团" {
+		URL = utils.LoadPredictRouter + "/d2_groups"
+	} else if index == "D3组团" {
+		URL = utils.LoadPredictRouter + "/d3_groups"
+	} else if index == "D4组团" {
+		URL = utils.LoadPredictRouter + "/d4_groups"
+	} else if index == "D5组团" {
+		URL = utils.LoadPredictRouter + "/d5_groups"
+	} else if index == "D6组团" {
+		URL = utils.LoadPredictRouter + "/d6_groups"
+	} else if index == "公共组团南区" {
+		URL = utils.LoadPredictRouter + "/nanqu"
+	} else if index == "公共组团北区" {
+		URL = utils.LoadPredictRouter + "/beiqu"
+	}
 
 	data := Output{}
-	resp, err := http.Post(utils.LoadPredictRouter+"/d1_groups", "application/json", strings.NewReader(string(input)))
+	resp, err := http.Post(URL, "application/json", strings.NewReader(string(input)))
 	if err != nil {
 		log.Println(err)
 		return Output{}
@@ -148,12 +166,72 @@ func GetData(index string, base int, zutuan string) []float64 {
 	return data.Data
 }
 
+/*
+func GetTotalLoad(str string) [24]float64 {
+	//str := "2023/03/19"
+	var load [24]float64
+
+	load1, _ := GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
+
+	load2, _ := GetResultFloatList(defs.GroupHeatConsumptionDay2, str)
+
+	load3, _ := GetResultFloatList(defs.GroupHeatConsumptionDay3, str)
+
+	load4, _ := GetResultFloatList(defs.GroupHeatConsumptionDay4, str)
+
+	load5, _ := GetResultFloatList(defs.GroupHeatConsumptionDay5, str)
+
+	load6, _ := GetResultFloatList(defs.GroupHeatConsumptionDay6, str)
+
+	load7, _ := GetResultFloatList(defs.GroupHeatConsumptionDayPubS, str)
+
+	load8, _ := GetResultFloatList(defs.GroupHeatConsumptionDayPubS, str)
+
+	for i := 0; i < len(load1); i++ {
+		load[i] = load1[i] + load2[i] + load3[i] + load4[i] + load5[i] + load6[i] + load7[i] + load8[i]
+		load[i] = load[i] / 3600000
+	}
+	//fmt.Println(load)
+
+	return load
+}
+*/
+
+func GetTotalLoad() []float64 {
+	//str := "2023/03/19"
+	var load []float64
+	load = make([]float64, 168)
+
+	load1 := LoadPredict("D1组团").Result
+
+	load2 := LoadPredict("D2组团").Result
+
+	load3 := LoadPredict("D3组团").Result
+
+	load4 := LoadPredict("D4组团").Result
+
+	load5 := LoadPredict("D5组团").Result
+
+	load6 := LoadPredict("D6组团").Result
+
+	load7 := LoadPredict("公共组团南区").Result
+
+	load8 := LoadPredict("公共组团北区").Result
+
+	for i := 0; i < len(load1); i++ {
+		load[i] = load1[i] + load2[i] + load3[i] + load4[i] + load5[i] + load6[i] + load7[i] + load8[i]
+	}
+	//fmt.Println(load)
+
+	return load
+}
+
 func GetLoad(index string, flag string) []float64 {
 	var load []float64
 
 	if flag == "today" {
-		str := GetToday()
-		//str := "2023/03/18"
+		//str := GetToday()
+		str := "2023/03/19"
 		switch index {
 		case "D1组团":
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
@@ -173,23 +251,25 @@ func GetLoad(index string, flag string) []float64 {
 			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, str)
 		}
 	} else if flag == "yesterday" {
+		//str := GetYesterday()
+		str := "2023/03/18"
 		switch index {
 		case "D1组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay1, str)
 		case "D2组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay2, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay2, str)
 		case "D3组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay3, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay3, str)
 		case "D4组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay4, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay4, str)
 		case "D5组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay5, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay5, str)
 		case "D6组团":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay6, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDay6, str)
 		case "公共组团南区":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, str)
 		case "公共组团北区":
-			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, GetYesterday())
+			load, _ = GetResultFloatList(defs.GroupHeatConsumptionDayPubS, str)
 		}
 	} else {
 		switch index {

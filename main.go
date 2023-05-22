@@ -1,6 +1,7 @@
 package main
 
 import (
+	"energy/api/energyConfig"
 	"energy/model"
 )
 
@@ -10,6 +11,9 @@ func main() {
 	model.InitRedis()
 	model.InitMongo()
 	model.LoopQueryUpdate()
+
+	//初始化能源调配参数
+	energyConfig.InitConfig()
 	//引用路由组件
 	InitRouter()
 }

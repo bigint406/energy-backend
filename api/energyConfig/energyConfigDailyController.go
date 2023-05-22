@@ -30,8 +30,12 @@ var (
 )
 
 // var loadDaily = [24]float64{206.54, 250.18, 214.85, 167.64, 182.05, 191.49, 211.57, 89.44, 27.73, 14.62, 7.68, 32.10, 32.35, 4.84, 33.30, 50.11, 37.97, 5.39, 22.92, 23.98, 87.57, 79.91, 89.96, 203.82}
-var loadDaily = [24]float64{369.94, 355.52, 324.63, 308.96, 289.64, 191.60, 333.00, 177.77, 215.62, 159.51, 165.07, 168.37, 235.35, 218.12, 337.49, 329.06, 140.63, 213.57, 282.12, 299.11, 373.90, 514.68, 313.60, 410.21}
-var energy = model.EnergyConfigDaily{
+//var loadDaily = [24]float64{369.94, 355.52, 324.63, 308.96, 289.64, 191.60, 333.00, 177.77, 215.62, 159.51, 165.07, 168.37, 235.35, 218.12, 337.49, 329.06, 140.63, 213.57, 282.12, 299.11, 373.90, 514.68, 313.60, 410.21}
+//var loadDaily = [24]float64{172.993275, 145.30265555555556, 145.32967361111113, 135.0105069444444, 146.40135416666666, 160.7001666666667, 178.58025694444444, 132.61163611111118, 131.68320277777775, 126.19351111111106, 121.09128888888888, 108.72937638888875, 96.90038750000004, 99.32340833333335, 95.2395499999999, 90.11576388888895, 92.47189583333326, 83.36640277777775, 99.87508611111106, 91.50452500000009, 105.88248611111115, 91.03844166666666, 87.35436111111117, 83.53618194444446}
+
+var loadDaily = [24]float64{}
+
+var Energy = model.EnergyConfigDaily{
 	Qs:                      29768,
 	Tank_top_export_temp:    80,
 	Tank_bottom_export_temp: 80,
@@ -88,8 +92,11 @@ func GetDeviceWorkTime(c *gin.Context) {
 }
 
 func GetLoadDetail(c *gin.Context) {
-	fullBoilerLoad := energy.GetBoilerLoad()
-	tankHeating := energy.GetTankHeatingLoad()
+	//Energy.Daily_load_prediction = model.GetTotalLoad("2023/03/18")
+	//fmt.Println(Energy.Daily_load_prediction)
+
+	fullBoilerLoad := Energy.GetBoilerLoad()
+	tankHeating := Energy.GetTankHeatingLoad()
 	var tankHeating2 [24]int
 	var tankStorage [24]int
 	var boilerLoad [24]int
@@ -100,11 +107,11 @@ func GetLoadDetail(c *gin.Context) {
 		tankHeating2[i] = int(tankHeating[i-len])
 	}
 	for i := 0; i < len; i++ {
-		tankStorage[i] = int(fullBoilerLoad[i] - loadDaily[i])
-		boilerLoad[i] = int(loadDaily[i])
+		tankStorage[i] = int(fullBoilerLoad[i] - Energy.Daily_load_prediction[i])
+		boilerLoad[i] = int(Energy.Daily_load_prediction[i])
 	}
 	for i := len; i < 24; i++ {
-		boilerLoad[i] = int(loadDaily[i] - tankHeating[i-(len)])
+		boilerLoad[i] = int(Energy.Daily_load_prediction[i] - tankHeating[i-(len)])
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -115,14 +122,38 @@ func GetLoadDetail(c *gin.Context) {
 }
 
 func GetBoilerConfigDaily(c *gin.Context) {
+	//Energy.Daily_load_prediction = model.GetTotalLoad("2023/03/18")
 
 	//a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, model.UnixToString(int(time.Now().Unix())))
-	a, _ := model.GetResultFloatNoTime(defs.EnergyBoilerRunningNum)
+	//a, _ := model.GetResultFloatNoTime(defs.EnergyBoilerRunningNum)
+
+	var array []int
+	array = make([]int, 24)
+
+	a, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[0], model.GetToday())
+	b, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[1], model.GetToday())
+	e, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[2], model.GetToday())
+	d, _ := model.GetResultFloatList(defs.EnergyRunningTimeDay[3], model.GetToday())
+
+	for i := 0; i < len(a); i++ {
+		if a[i] > 0 {
+			array[i]++
+		}
+		if b[i] > 0 {
+			array[i]++
+		}
+		if e[i] > 0 {
+			array[i]++
+		}
+		if d[i] > 0 {
+			array[i]++
+		}
+	}
 
 	//a, _ := model.GetResultFloatList(defs.EnergyBoilerRunningNum, "2023/02/20")
 	c.JSON(http.StatusOK, gin.H{
-		"实际": a,
-		"建议": energy.GetBoilerRunningNum(),
+		"实际": array,
+		"建议": Energy.GetBoilerRunningNum(),
 	})
 
 	/*
@@ -137,8 +168,8 @@ func GetBoilerConfigDaily(c *gin.Context) {
 func GetData(c *gin.Context) {
 	// fmt.Println("水箱放热：", energy.GetTankHeatingLoad())
 	c.JSON(http.StatusOK, gin.H{
-		"水箱放热":      energy.GetTankHeatingLoad(),
-		"电锅炉承担逐时负荷": energy.GetBoilerLoad(),
+		"水箱放热":      Energy.GetTankHeatingLoad(),
+		"电锅炉承担逐时负荷": Energy.GetBoilerLoad(),
 	})
 }
 
@@ -153,8 +184,9 @@ func GetConsumption(c *gin.Context) {
 }
 
 func GetTankConfigDaily(c *gin.Context) {
+	//Energy.Daily_load_prediction = model.GetTotalLoad("2023/03/18")
 	c.JSON(http.StatusOK, gin.H{
-		"data": energy.GetTankRecommendedHourlyWorkingCondition(),
+		"data": Energy.GetTankRecommendedHourlyWorkingCondition(),
 	})
 }
 

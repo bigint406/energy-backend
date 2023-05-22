@@ -12,6 +12,7 @@ import (
 var ()
 
 //var loadDaily = [24]float64{537.41, 586.16, 618.91, 607.23, 608.5, 621.55, 645.52, 890.35, 690.17, 501.28, 1204.25, 915.07, 793.98, 748.76, 714.84, 694.95, 657.61, 681.41, 791.54, 999.22, 1156.91, 1264.27, 828.37, 661.38}
+/*
 var loadWeekly = [7][24]float64{
 	loadDaily,
 	{331.61, 327.64, 291.98, 271.11, 338.62, 264.94, 439.08, 319.32, 171.60, 365.83, 368.43, 379.81, 297.32, 425.78, 428.64, 497.79, 318.52, 418.89, 565.24, 552.80, 496.60, 504.43, 519.91, 491.58},
@@ -20,7 +21,10 @@ var loadWeekly = [7][24]float64{
 	{478.42, 442.55, 498.55, 388.87, 456.45, 449.64, 570.63, 357.31, 153.06, 171.74, 219.67, 127.82, 171.08, 136.62, 130.15, 182.17, 58.87, 199.13, 319.11, 280.11, 383.18, 506.15, 305.88, 518.21},
 	{484.52, 380.37, 386.27, 409.90, 319.67, 267.47, 417.12, 209.60, 82.29, 38.84, 70.02, 62.94, 80.29, 71.43, 109.92, 76.45, 41.19, 60.57, 62.54, 231.44, 147.66, 267.45, 263.59, 251.67},
 	{206.54, 250.18, 214.85, 167.64, 182.05, 191.49, 211.57, 89.44, 27.73, 14.62, 7.68, 32.10, 32.35, 4.84, 33.30, 50.11, 37.97, 5.39, 22.92, 23.98, 87.57, 79.91, 89.96, 203.82}}
-var energyWeekly = model.EnergyConfigWeekly{
+*/
+//var loadWeekly = [7][24]float64{model.GetTotalLoad("2023/03/18"), model.GetTotalLoad("2023/03/19"), model.GetTotalLoad("2023/03/20"), model.GetTotalLoad("2023/03/21"), model.GetTotalLoad("2023/03/22"), model.GetTotalLoad("2023/03/23"), model.GetTotalLoad("2023/03/24")}
+var loadWeekly = [7][24]float64{}
+var EnergyWeekly = model.EnergyConfigWeekly{
 	Qs: 29768,
 
 	Heat_loss_rectify_coefficiency:       0.05,
@@ -54,7 +58,11 @@ var energyWeekly = model.EnergyConfigWeekly{
 }
 
 func GetHeatStorageWeek(c *gin.Context) {
-	a := energyWeekly.GetHeatStorageAagin()
+	//EnergyWeekly.Week_load_prediction = [7][24]float64{model.GetTotalLoad("2023/03/18"), model.GetTotalLoad("2023/03/19"), model.GetTotalLoad("2023/03/20"), model.GetTotalLoad("2023/03/21"), model.GetTotalLoad("2023/03/22"), model.GetTotalLoad("2023/03/23"), model.GetTotalLoad("2023/03/24")}
+
+	//fmt.Println(EnergyWeekly.Week_load_prediction[0])
+
+	a := EnergyWeekly.GetHeatStorageAagin()
 	//b := []int{4, 4, 2, 5, 6, 7, 6}
 	b := Get7dTemp()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
@@ -73,7 +81,9 @@ func GetHeatStorageWeek(c *gin.Context) {
 }
 
 func GetElectricityWeek(c *gin.Context) {
-	a := energyWeekly.GetPeakTransferPower(energyWeekly.GetHeatStorageAagin())
+	//EnergyWeekly.Week_load_prediction = [7][24]float64{model.GetTotalLoad("2023/03/18"), model.GetTotalLoad("2023/03/19"), model.GetTotalLoad("2023/03/20"), model.GetTotalLoad("2023/03/21"), model.GetTotalLoad("2023/03/22"), model.GetTotalLoad("2023/03/23"), model.GetTotalLoad("2023/03/24")}
+
+	a := EnergyWeekly.GetPeakTransferPower(EnergyWeekly.GetHeatStorageAagin())
 	//b := []int{4, 4, 2, 5, 6, 7, 6}
 	b := Get7dTemp()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
@@ -92,7 +102,7 @@ func GetElectricityWeek(c *gin.Context) {
 }
 
 func GetConfigWeek(c *gin.Context) {
-	vally, other := energyWeekly.GetBoilerRunningTime()
+	vally, other := EnergyWeekly.GetBoilerRunningTime()
 	//x := []string{"2月28号", "3月1号", "3月2号", "3月3号", "3月4号", "3月5号", "3月6号"}
 	x := MakeX()
 	c.JSON(http.StatusOK, gin.H{
@@ -103,7 +113,7 @@ func GetConfigWeek(c *gin.Context) {
 }
 
 func GetEnergySaving(c *gin.Context) {
-	a := energyWeekly.GetEnergySaving()
+	a := EnergyWeekly.GetEnergySaving()
 	//a := []float64{103, 127, 113, 145, 110, 87, 105}
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
@@ -117,7 +127,7 @@ func GetEnergySaving(c *gin.Context) {
 }
 
 func GetRunningCost(c *gin.Context) {
-	a := energyWeekly.GetRunningCost()
+	a := EnergyWeekly.GetRunningCost()
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()
 	for i := 0; i < len(a); i++ {
@@ -130,7 +140,7 @@ func GetRunningCost(c *gin.Context) {
 }
 
 func GetCarbonEmission(c *gin.Context) {
-	a := energyWeekly.GetCarbonEmission(energyWeekly.GetEnergySaving())
+	a := EnergyWeekly.GetCarbonEmission(EnergyWeekly.GetEnergySaving())
 	//a := []float64{54, 43, 47, 51, 61, 41, 52}
 	//x := []string{"2023-02-28", "2023-03-01", "2023-03-02", "2023-03-03", "2023-03-04", "2023-03-05", "2023-03-06"}
 	x := MakeX()

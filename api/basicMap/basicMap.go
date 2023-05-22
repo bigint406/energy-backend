@@ -51,7 +51,7 @@ func GetAtmosphere(c *gin.Context) {
 	*/
 
 	c.JSON(http.StatusOK, gin.H{
-		//"data": []string{"5", "30", "450", "2.4", "920"},
+		//"data": []string{"24", "30", "450", "2.4", "920"},
 		"data": GetAtmo(),
 	})
 
