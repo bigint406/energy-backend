@@ -11,4 +11,5 @@ func EnergyStationRouter(router *gin.RouterGroup) {
 	router.GET("basicdatalist", pageDataPresent.BasicDataList)
 	router.GET("opcdata", pageDataPresent.OpcDataList)
 	router.POST("basicdataset", pageDataPresent.BasicDataSet)
+	router.GET("pagedata", pageDataPresent.PageData)
 }
