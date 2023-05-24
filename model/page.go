@@ -5,25 +5,27 @@ import (
 	"log"
 )
 
-var pages map[string]map[string]interface{}
-
-func PageInit() {
-	pages = make(map[string]map[string]interface{}, 10)
+type Pages struct {
+	pages map[string](map[string]interface{})
 }
 
-func PageUpdate(page string, name string, value interface{}) {
-	p, ok := pages[page]
+func (p *Pages) PageInit() {
+	p.pages = make(map[string]map[string]interface{}, 10)
+}
+
+func (p *Pages) PageUpdate(page string, name string, value interface{}) {
+	pp, ok := p.pages[page]
 	if !ok {
 		newPage := make(map[string]interface{})
 		newPage[name] = value
-		pages[page] = newPage
+		p.pages[page] = newPage
 	} else {
-		p[name] = value
+		pp[name] = value
 	}
 }
 
-func PageUpload() {
-	for k, v := range pages {
+func (p *Pages) PageUpload() {
+	for k, v := range p.pages {
 		data, err := json.Marshal(v)
 		if err != nil {
 			log.Printf("pageupload json marshal error: %s", err)

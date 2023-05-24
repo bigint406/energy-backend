@@ -77,3 +77,9 @@ func BasicDataSet(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ans)
 }
+
+func PageData(c *gin.Context) {
+	page := c.Query("page")
+	a := model.RedisClient.Get(page)
+	c.JSON(http.StatusOK, a.Val())
+}

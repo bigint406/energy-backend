@@ -177,13 +177,14 @@ func updateMinute(t time.Time, upsert bool) {
 	lastMinStr := fmt.Sprintf("%s:%02d", lastMinHourStr, lastMinTime.Minute())
 	log.Println(lastMinStr)
 	var data float64
+	var page Pages
 	if upsert {
-		PageInit()
+		page.PageInit()
 	}
 	//报警数据
 	data = UpdateEnergyAlarm(lastMinHourStr, lastMin, lastMinTime) //能源站
 	if upsert {
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmNumToday, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmNumToday, data)
 	}
 	UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime) //制冷中心
 	UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime) //二次泵站
@@ -247,10 +248,10 @@ func updateMinute(t time.Time, upsert bool) {
 		}
 		//能源站
 		data, _ = CalcEnergyOnlineRate(lastMinHourStr) //能源站设备在线率
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyOnlineRate, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyOnlineRate, data)
 
 		data = CalcEnergyBoilerPower(lastMinHourStr, lastMin) //能源站锅炉总功率
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPower, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPower, data)
 
 		dataList = CalcEnergyBoilerEnergyCost(lastMinHourStr) //本小时各锅炉能耗(单位kW·h)
 		q23 := dataList[0] + dataList[1] + dataList[2] + dataList[3]
@@ -259,25 +260,25 @@ func updateMinute(t time.Time, upsert bool) {
 		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday2, dataList[1])
 		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday3, dataList[2])
 		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday4, dataList[3])
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday1, dataList[0])
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday2, dataList[1])
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday3, dataList[2])
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday4, dataList[3])
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday1, dataList[0])
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday2, dataList[1])
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday3, dataList[2])
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday4, dataList[3])
 
 		data = CalcEnergyPowerConsumptionToday(lastMinTime, q23) //能源站今日能耗
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyPowerConsumptionToday, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyPowerConsumptionToday, data)
 
 		data = CalcEnergyBoilerRunningNum(lastMinHourStr, lastMin) //能源站锅炉运行数目
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerRunningNum, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerRunningNum, data)
 
 		data = CalcEnergyTankRunningNum(lastMinHourStr, lastMin) //蓄热水箱运行台数
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyTankRunningNum, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyTankRunningNum, data)
 
 		dataList = CalcEnergyRunningTimeToday(lastMinTime) //设备今日运行时长
 		MongoUpsertOne(defs.EnergyRunningTimeToday, dataList)
 
 		data = CalcEnergyHeatSupplyToday(t) //总供热量
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatSupplyToday, data)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatSupplyToday, data)
 
 		//制冷中心
 		q1 := CalcColdMachinePower(lastMinHourStr, lastMin, defs.ColdMachine1)
@@ -346,17 +347,16 @@ func updateMinute(t time.Time, upsert bool) {
 	//更新页面数据
 	if upsert {
 		datalist, _ := GetResultFloatList(defs.EnergyHeatStorageAndRelease, lastMinDayStr)
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatStorageAndRelease, datalist)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatStorageAndRelease, datalist)
 		datalist, _ = GetResultFloatList(defs.EnergyBoilerEnergyCost, lastMinDayStr)
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerEnergyCost, datalist)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerEnergyCost, datalist)
 		maplist, _ := GetResultInterfaceList(defs.EnergyAlarmToday, lastMinDayStr)
-		PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmToday, maplist)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmToday, maplist)
 		for _, v := range defs.OpcItemEnergy {
-			datalist, _ = GetOpcFloatList(v, lastMinStr)
-			PageUpdate(defs.PageSystemEnergy, v, datalist)
+			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
+			page.PageUpdate(defs.PageSystemEnergy, v, datalist)
 		}
-
-		PageUpload()
+		page.PageUpload()
 	}
 }
 
