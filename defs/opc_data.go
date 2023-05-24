@@ -17,6 +17,12 @@ var GroupHallwayTemp = []string{"group_hallway_temp1", //1组团走廊温度
 	"group_hallway_temp6",      //6组团走廊温度
 	"group_hallway_temp_pub_s", //公共组团南区走廊温度
 	"group_hallway_temp_pub_n"} //公共组团北区走廊温度
+
+// 页面名
+const (
+	PageSystemEnergy = "sys_ener"
+)
+
 // 计算结果表名
 const (
 	GroupHeatConsumptionHour1    = "group_heat_consumption_hour_1"     //1组团耗热量当小时每分钟

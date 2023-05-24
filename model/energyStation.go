@@ -529,7 +529,7 @@ var energyAlarmOpcList = map[string]defs.Alarm{
 }
 
 // 报警
-func UpdateEnergyAlarm(hourStr string, min int, t time.Time) {
+func UpdateEnergyAlarm(hourStr string, min int, t time.Time) float64 {
 	dayStr := fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day())
 	minStr := fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
 	var oldList defs.MongoAlarmList
@@ -584,4 +584,5 @@ func UpdateEnergyAlarm(hourStr string, min int, t time.Time) {
 	}
 
 	MongoUpsertOne(defs.EnergyAlarmNumToday, alarmNum)
+	return alarmNum
 }
