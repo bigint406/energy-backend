@@ -60,30 +60,28 @@ func updateDay(t time.Time, upsert bool) {
 	day := t.Day()
 	monthStr := fmt.Sprintf("%04d/%02d", t.Year(), t.Month())
 	dayStr := fmt.Sprintf("%s/%02d", monthStr, day)
-	if upsert {
 
-		data := CalcEnergyCarbonDay(dayStr) //能源站碳排
-		MongoUpdateList(monthStr, day, defs.EnergyCarbonMonth, data)
-		data = CalcEnergyPayloadDay(dayStr) //能源站锅炉负载
-		MongoUpdateList(monthStr, day, defs.EnergyBoilerPayloadMonth, data)
+	data := CalcEnergyCarbonDay(dayStr) //能源站碳排
+	MongoUpdateList(monthStr, day, defs.EnergyCarbonMonth, data)
+	data = CalcEnergyPayloadDay(dayStr) //能源站锅炉负载
+	MongoUpdateList(monthStr, day, defs.EnergyBoilerPayloadMonth, data)
 
-		data = CalcColdCarbonDay(dayStr) //制冷站碳排
-		MongoUpdateList(monthStr, day, defs.ColdCarbonMonth, data)
+	data = CalcColdCarbonDay(dayStr) //制冷站碳排
+	MongoUpdateList(monthStr, day, defs.ColdCarbonMonth, data)
 
-		//二次泵站
-		data = CalcPumpCarbonDay(dayStr)
-		MongoUpdateList(monthStr, day, defs.PumpCarbonMonth, data)
+	//二次泵站
+	data = CalcPumpCarbonDay(dayStr)
+	MongoUpdateList(monthStr, day, defs.PumpCarbonMonth, data)
 
-		//太阳能热水
-		data = CalcSolarWaterHeatCollectionDay(dayStr) //集热量
-		MongoUpdateList(monthStr, day, defs.SolarWaterHeatCollectionMonth, data)
-		data = CalcSolarWaterHeatEfficiencyDay(dayStr) //集热效率
-		MongoUpdateList(monthStr, day, defs.SolarWaterHeatEfficiencyMonth, data)
-		data = CalcSolarWaterGuaranteeRateDay(dayStr) //保证率
-		MongoUpdateList(monthStr, day, defs.SolarWaterGuaranteeRateMonth, data)
-	}
+	//太阳能热水
+	data = CalcSolarWaterHeatCollectionDay(dayStr) //集热量
+	MongoUpdateList(monthStr, day, defs.SolarWaterHeatCollectionMonth, data)
+	data = CalcSolarWaterHeatEfficiencyDay(dayStr) //集热效率
+	MongoUpdateList(monthStr, day, defs.SolarWaterHeatEfficiencyMonth, data)
+	data = CalcSolarWaterGuaranteeRateDay(dayStr) //保证率
+	MongoUpdateList(monthStr, day, defs.SolarWaterGuaranteeRateMonth, data)
 	//太阳能发电
-	data := SumOpcResultList(defs.SolarElecGenDay, dayStr) //发电量
+	data = SumOpcResultList(defs.SolarElecGenDay, dayStr) //发电量
 	MongoUpdateList(monthStr, day, defs.SolarElecGenMonth, data)
 
 	if t.Add(time.Hour*24).Month() != t.Month() {
@@ -97,73 +95,70 @@ func updateHour(t time.Time, upsert bool) {
 	dayStr := fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day())
 	hourStr := fmt.Sprintf("%s %02d", dayStr, hour)
 	var data float64
-	if upsert {
-
-		q3 := CalcEnergyHeatStorageAndRelease(hourStr) //蓄放热量统计，正值蓄热，负值放热
-		MongoUpdateList(dayStr, hour, defs.EnergyHeatStorageAndRelease, q3)
-		q1 := CalcEnergyBoilerHeatSupply(hourStr)     //能源站锅炉供热量
-		q2List := CalcEnergyBoilerEnergyCost(hourStr) //各锅炉能耗(单位kW·h)
-		q2 := q2List[0] + q2List[1] + q2List[2] + q2List[3]
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay1, q2List[0])
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay2, q2List[1])
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay3, q2List[2])
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay4, q2List[3])
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerEnergyCost, q2)
-		data = CalcEnergyBoilerEfficiency(q1, q2) //能源站锅炉效率
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerEfficiencyDay, data)
-		data = CalcWatertankEfficiency(q3, hourStr) //能源站蓄热水箱效率
-		MongoUpdateList(dayStr, hour, defs.EnergyWatertankEfficiencyDay, data)
-		data = CalcEnergyEfficiency(hourStr) //能源站效率
-		MongoUpdateList(dayStr, hour, defs.EnergyEfficiencyDay, data)
-		data = CalcEnergyCarbonHour(hourStr, q2) //能源站碳排
-		MongoUpdateList(dayStr, hour, defs.EnergyCarbonDay, data)
-		data = CalcEnergyPayloadHour(q1) //能源站锅炉负载率
-		MongoUpdateList(dayStr, hour, defs.EnergyBoilerPayloadDay, data)
-		dataList := CalcEnergyRunningTimeHour(hourStr) //设备运行时间（分钟）
-		for i := 0; i < 9; i++ {
-			MongoUpdateList(dayStr, hour, defs.EnergyRunningTimeDay[i], dataList[i])
-		}
-
-		//制冷中心
-		q1 = CalcColdEnergyCost(hourStr, defs.ColdMachine1)
-		q2 = CalcColdEnergyCost(hourStr, defs.ColdMachine2)
-		q3 = CalcColdEnergyCost(hourStr, defs.ColdMachine3)
-		q := q1 + q2 + q3
-		MongoUpdateList(dayStr, hour, defs.ColdEnergyCostDay, q) //耗能
-		//制冷效率（流量没拿到）
-		data = CalcColdEfficiency(hourStr, q)
-
-		//碳排
-		data = CalcColdCarbonHour(q)
-		MongoUpdateList(dayStr, hour, defs.ColdCarbonDay, data)
-		//负载率（流量没拿到）
-
-		//二次泵站
-		data = CalcPumpEnergyCostHour(hourStr) //耗能
-		MongoUpdateList(dayStr, hour, defs.PumpEnergyCostDay, data)
-		dataList = CalcPumpEHR(hourStr) //输热比
-		MongoUpdateList(dayStr, hour, defs.PumpEHR1, dataList[0])
-		MongoUpdateList(dayStr, hour, defs.PumpEHR2, dataList[1])
-
-		dataList = CalcHeatConsumptionHour(hourStr) //耗热统计
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay1, dataList[0])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay2, dataList[1])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay3, dataList[2])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay4, dataList[3])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay5, dataList[4])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay6, dataList[5])
-		MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDayPubS, dataList[6])
-
-		//太阳能热水
-		q1 = CalcSolarWaterHeatCollectionHour(hourStr) //集热量
-		MongoUpdateList(dayStr, hour, defs.SolarWaterHeatCollectionDay, q1)
-		data = CalcSolarWaterHeatEfficiency(t, q1) //集热效率
-		MongoUpdateList(dayStr, hour, defs.SolarWaterHeatEfficiencyDay, data)
-		q2 = CalcSolarWaterBoilerPowerConsumptionHour(hourStr) //电加热器耗电
-		MongoUpdateList(dayStr, hour, defs.SolarWaterBoilerPowerConsumptionDay, q2)
-		data = CalcSolarWaterGuaranteeRate(q1, q2) //保证率
-		MongoUpdateList(dayStr, hour, defs.SolarWaterGuaranteeRateDay, data)
+	q3 := CalcEnergyHeatStorageAndRelease(hourStr) //蓄放热量统计，正值蓄热，负值放热
+	MongoUpdateList(dayStr, hour, defs.EnergyHeatStorageAndRelease, q3)
+	q1 := CalcEnergyBoilerHeatSupply(hourStr)     //能源站锅炉供热量
+	q2List := CalcEnergyBoilerEnergyCost(hourStr) //各锅炉能耗(单位kW·h)
+	q2 := q2List[0] + q2List[1] + q2List[2] + q2List[3]
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay1, q2List[0])
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay2, q2List[1])
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay3, q2List[2])
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerPowerConsumptionDay4, q2List[3])
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerEnergyCost, q2)
+	data = CalcEnergyBoilerEfficiency(q1, q2) //能源站锅炉效率
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerEfficiencyDay, data)
+	data = CalcWatertankEfficiency(q3, hourStr) //能源站蓄热水箱效率
+	MongoUpdateList(dayStr, hour, defs.EnergyWatertankEfficiencyDay, data)
+	data = CalcEnergyEfficiency(hourStr) //能源站效率
+	MongoUpdateList(dayStr, hour, defs.EnergyEfficiencyDay, data)
+	data = CalcEnergyCarbonHour(hourStr, q2) //能源站碳排
+	MongoUpdateList(dayStr, hour, defs.EnergyCarbonDay, data)
+	data = CalcEnergyPayloadHour(q1) //能源站锅炉负载率
+	MongoUpdateList(dayStr, hour, defs.EnergyBoilerPayloadDay, data)
+	dataList := CalcEnergyRunningTimeHour(hourStr) //设备运行时间（分钟）
+	for i := 0; i < 9; i++ {
+		MongoUpdateList(dayStr, hour, defs.EnergyRunningTimeDay[i], dataList[i])
 	}
+
+	//制冷中心
+	q1 = CalcColdEnergyCost(hourStr, defs.ColdMachine1)
+	q2 = CalcColdEnergyCost(hourStr, defs.ColdMachine2)
+	q3 = CalcColdEnergyCost(hourStr, defs.ColdMachine3)
+	q := q1 + q2 + q3
+	MongoUpdateList(dayStr, hour, defs.ColdEnergyCostDay, q) //耗能
+	//制冷效率（流量没拿到）
+	//data = CalcColdEfficiency(hourStr, q)
+
+	//碳排
+	data = CalcColdCarbonHour(q)
+	MongoUpdateList(dayStr, hour, defs.ColdCarbonDay, data)
+	//负载率（流量没拿到）
+
+	//二次泵站
+	data = CalcPumpEnergyCostHour(hourStr) //耗能
+	MongoUpdateList(dayStr, hour, defs.PumpEnergyCostDay, data)
+	dataList = CalcPumpEHR(hourStr) //输热比
+	MongoUpdateList(dayStr, hour, defs.PumpEHR1, dataList[0])
+	MongoUpdateList(dayStr, hour, defs.PumpEHR2, dataList[1])
+
+	dataList = CalcHeatConsumptionHour(hourStr) //耗热统计
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay1, dataList[0])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay2, dataList[1])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay3, dataList[2])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay4, dataList[3])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay5, dataList[4])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDay6, dataList[5])
+	MongoUpdateList(dayStr, hour, defs.GroupHeatConsumptionDayPubS, dataList[6])
+
+	//太阳能热水
+	q1 = CalcSolarWaterHeatCollectionHour(hourStr) //集热量
+	MongoUpdateList(dayStr, hour, defs.SolarWaterHeatCollectionDay, q1)
+	data = CalcSolarWaterHeatEfficiency(t, q1) //集热效率
+	MongoUpdateList(dayStr, hour, defs.SolarWaterHeatEfficiencyDay, data)
+	q2 = CalcSolarWaterBoilerPowerConsumptionHour(hourStr) //电加热器耗电
+	MongoUpdateList(dayStr, hour, defs.SolarWaterBoilerPowerConsumptionDay, q2)
+	data = CalcSolarWaterGuaranteeRate(q1, q2) //保证率
+	MongoUpdateList(dayStr, hour, defs.SolarWaterGuaranteeRateDay, data)
 	//太阳能发电
 	data = CalcSolarElecGenHour(hourStr) //本小时发电量
 	MongoUpdateList(dayStr, hour, defs.SolarElecGenDay, data)
@@ -182,62 +177,60 @@ func updateMinute(t time.Time, upsert bool) {
 	lastMinStr := fmt.Sprintf("%s:%02d", lastMinHourStr, lastMinTime.Minute())
 	log.Println(lastMinStr)
 	var data float64
+	//报警数据
+	UpdateEnergyAlarm(lastMinHourStr, lastMin, lastMinTime) //能源站
+	UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime)   //制冷中心
+	UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime)   //二次泵站
+	//之后计算要用的数据
 
+	// exampleTime := "2022/05/01 08:05"
+	//二次泵站
+	var HeatData defs.LouHeatList
+	err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "heat"}}).Decode(&HeatData)
+	// err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "heat"}}).Decode(&HeatData)
+	if err == nil {
+		dataList := CalcPumpHeat(&HeatData) //统计输热量
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour1, dataList[0])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour2, dataList[1])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour3, dataList[2])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour4, dataList[3])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour5, dataList[4])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour6, dataList[5])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHourPubS, dataList[6])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
+		MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
+	} else {
+		log.Println(lastMinStr)
+		log.Println("heat data miss")
+		log.Println(err)
+	}
+	//太阳能热水
+	var GAData defs.LouSolarWaterList
+	GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "GA"}}).Decode(&GAData)
+	// GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "GA"}}).Decode(&GAData)
+	if GAerr == nil {
+		data = CalcSolarWaterHeatCollectionMin(&GAData.Info) //集热量
+		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterHeatCollectionHour, data)
+		data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
+		MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
+	} else {
+		log.Println(lastMinStr)
+		log.Println("GA data miss")
+		log.Println(err)
+	}
+
+	var HData defs.LouH
+	Herr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "H"}}).Decode(&HData)
+	if Herr == nil {
+
+	} else {
+		log.Println(lastMinStr)
+		log.Println("H data miss")
+		log.Println(err)
+	}
+
+	//实时展示数据
 	if upsert {
-		//报警数据
-		UpdateEnergyAlarm(lastMinHourStr, lastMin, lastMinTime) //能源站
-		UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime)   //制冷中心
-		UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime)   //二次泵站
-		//之后计算要用的数据
-
-		// exampleTime := "2022/05/01 08:05"
-		//二次泵站
-		var HeatData defs.LouHeatList
-		err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "heat"}}).Decode(&HeatData)
-		// err := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "heat"}}).Decode(&HeatData)
-		if err == nil {
-			dataList := CalcPumpHeat(&HeatData) //统计输热量
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour1, dataList[0])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour2, dataList[1])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour3, dataList[2])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour4, dataList[3])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour5, dataList[4])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHour6, dataList[5])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.GroupHeatConsumptionHourPubS, dataList[6])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour1, dataList[0]+dataList[1])
-			MongoUpdateList(lastMinHourStr, lastMin, defs.PumpHeatHour2, dataList[2]+dataList[3]+dataList[4]+dataList[5])
-		} else {
-			log.Println(lastMinStr)
-			log.Println("heat data miss")
-			log.Println(err)
-		}
-
-		//太阳能热水
-		var GAData defs.LouSolarWaterList
-		GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "GA"}}).Decode(&GAData)
-		// GAerr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", exampleTime}, {"name", "GA"}}).Decode(&GAData)
-		if GAerr == nil {
-			data = CalcSolarWaterHeatCollectionMin(&GAData.Info) //集热量
-			MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterHeatCollectionHour, data)
-			data = CalcSolarWaterBoilerPowerConsumptionMin(&GAData.Info) //电加热器耗电
-			MongoUpdateList(lastMinHourStr, lastMin, defs.SolarWaterBoilerPowerConsumptionHour, data)
-		} else {
-			log.Println(lastMinStr)
-			log.Println("GA data miss")
-			log.Println(err)
-		}
-
-		var HData defs.LouH
-		Herr := MongoLoukong.FindOne(context.TODO(), bson.D{{"time", lastMinStr}, {"name", "H"}}).Decode(&HData)
-		if Herr == nil {
-
-		} else {
-			log.Println(lastMinStr)
-			log.Println("H data miss")
-			log.Println(err)
-		}
-
-		//实时展示数据
 		var dataList []float64
 		//基础设施地图
 		if Herr == nil {
