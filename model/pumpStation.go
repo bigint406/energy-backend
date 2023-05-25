@@ -170,9 +170,9 @@ var pumpAlarmOpcList = map[string]defs.Alarm{
 }
 
 // 报警
-func UpdatePumpAlarm(hourStr string, min int, t time.Time) {
+func UpdatePumpAlarm(hourStr string, min int, t time.Time) float64 {
 	var oldList defs.MongoAlarmList
-	MongoResult.FindOne(context.TODO(), bson.D{{"name", defs.ColdAlarmToday}, {"time", hourStr}}).Decode(&oldList)
+	MongoResult.FindOne(context.TODO(), bson.D{{"name", defs.PumpAlarmToday}, {"time", hourStr}}).Decode(&oldList)
 	alarmMap := make(map[string]int)
 	for _, v := range oldList.Value {
 		if v.State == 0 {
@@ -216,10 +216,11 @@ func UpdatePumpAlarm(hourStr string, min int, t time.Time) {
 	oldList.Value = append(oldList.Value, newList...)
 
 	opts := options.Update().SetUpsert(true)
-	_, err = MongoResult.UpdateOne(context.TODO(), bson.D{{"name", defs.ColdAlarmToday}, {"time", hourStr}}, bson.D{{"$set", bson.D{{"value", oldList.Value}}}}, opts)
+	_, err = MongoResult.UpdateOne(context.TODO(), bson.D{{"name", defs.PumpAlarmToday}, {"time", hourStr}}, bson.D{{"$set", bson.D{{"value", oldList.Value}}}}, opts)
 	if err != nil {
 		log.Print(err)
 	}
 
 	MongoUpsertOne(defs.PumpAlarmNumToday, alarmNum)
+	return alarmNum
 }
