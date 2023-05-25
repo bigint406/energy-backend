@@ -174,6 +174,7 @@ func updateMinute(t time.Time, upsert bool) {
 	lastMin := lastMinTime.Minute()
 	month := int(t.Month())
 	lastMinYearStr := fmt.Sprintf("%04d", t.Year())
+	lastMinLastYearStr := fmt.Sprintf("%04d", t.Year()-1)
 	lastMinMonthStr := fmt.Sprintf("%s/%02d", lastMinYearStr, month)
 	lastMinDayStr := fmt.Sprintf("%04d/%02d/%02d", lastMinTime.Year(), lastMinTime.Month(), lastMinTime.Day())
 	lastMinHourStr := fmt.Sprintf("%s %02d", lastMinDayStr, lastMinTime.Hour())
@@ -188,14 +189,17 @@ func updateMinute(t time.Time, upsert bool) {
 	data = UpdateEnergyAlarm(lastMinHourStr, lastMin, lastMinTime) //能源站
 	if upsert {
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmNumToday, data)
+		page.PageUpdate(defs.PageBasicMap, defs.EnergyAlarmNumToday, data)
 	}
 	data = UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime) //制冷中心
 	if upsert {
 		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdAlarmNumToday, data)
+		page.PageUpdate(defs.PageBasicMap, defs.PageSystemRefigeration, data)
 	}
 	data = UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime) //二次泵站
 	if upsert {
 		page.PageUpdate(defs.PageSystemPump, defs.PumpAlarmNumToday, data)
+		page.PageUpdate(defs.PageBasicMap, defs.PageSystemPump, data)
 	}
 	//之后计算要用的数据
 
@@ -252,12 +256,13 @@ func updateMinute(t time.Time, upsert bool) {
 		if Herr == nil {
 			dataList = CalcBasicMapHallwayTemp(&HData.Info)
 			for i := 0; i < len(dataList); i++ {
-				MongoUpsertOne(defs.GroupHallwayTemp[i], dataList[i])
+				page.PageUpdate(defs.PageBasicMap, defs.GroupHallwayTemp[i], dataList[i])
 			}
 		}
 		//能源站
 		data, _ = CalcEnergyOnlineRate(lastMinHourStr) //能源站设备在线率
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyOnlineRate, data)
+		page.PageUpdate(defs.PageBasicMap, defs.EnergyOnlineRate, data)
 
 		data = CalcEnergyBoilerPower(lastMinHourStr, lastMin) //能源站锅炉总功率
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPower, data)
@@ -367,9 +372,24 @@ func updateMinute(t time.Time, upsert bool) {
 
 	//更新页面数据
 	if upsert {
+		//基础设施地图
+		datalist, _ := GetResultFloatList(defs.GroupHeatConsumptionHour1, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour1, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHour2, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour2, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHour3, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour3, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHour4, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour4, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHour5, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour5, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHour6, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHour6, datalist)
+		datalist, _ = GetResultFloatList(defs.GroupHeatConsumptionHourPubS, lastMinHourStr)
+		page.PageUpdate(defs.PageBasicMap, defs.GroupHeatConsumptionHourPubS, datalist)
 		//——————————————————系统层——————————————————
 		//能源站
-		datalist, _ := GetResultFloatList(defs.EnergyHeatStorageAndRelease, lastMinDayStr)
+		datalist, _ = GetResultFloatList(defs.EnergyHeatStorageAndRelease, lastMinDayStr)
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatStorageAndRelease, datalist)
 		datalist, _ = GetResultFloatList(defs.EnergyBoilerEnergyCost, lastMinDayStr)
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerEnergyCost, datalist)
@@ -410,6 +430,64 @@ func updateMinute(t time.Time, upsert bool) {
 			page.PageUpdate(defs.PageSystemSolarElec, v, datalist)
 		}
 		//——————————————————能效分析——————————————————
+		//能源站
+		datalist, _ = GetResultFloatList(defs.EnergyBoilerEfficiencyDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyBoilerEfficiencyDay, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyEfficiencyDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyEfficiencyDay, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyCarbonDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyCarbonDay, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyCarbonMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyCarbonMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyCarbonYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyCarbonYear, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyCarbonYear, lastMinLastYearStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyCarbonLastYear, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyBoilerPayloadDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyBoilerPayloadDay, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyBoilerPayloadMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyBoilerPayloadMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.EnergyBoilerPayloadYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseEnergy, defs.EnergyBoilerPayloadYear, datalist)
+		//制冷中心
+		datalist, _ = GetResultFloatList(defs.ColdEfficientDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdEfficientDay, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdPayLoadDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdPayLoadDay, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdPayLoadMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdPayLoadMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdPayLoadYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdPayLoadYear, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdCarbonDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdCarbonDay, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdCarbonMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdCarbonMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdCarbonYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdCarbonYear, datalist)
+		datalist, _ = GetResultFloatList(defs.ColdCarbonYear, lastMinLastYearStr)
+		page.PageUpdate(defs.PageAnalyseRefigeration, defs.ColdCarbonLastYear, datalist)
+		//二次泵站
+		datalist, _ = GetResultFloatList(defs.PumpEHR1, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalysePump, defs.PumpEHR1, datalist)
+		datalist, _ = GetResultFloatList(defs.PumpEHR2, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalysePump, defs.PumpEHR2, datalist)
+		datalist, _ = GetResultFloatList(defs.PumpCarbonYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalysePump, defs.PumpCarbonYear, datalist)
+		datalist, _ = GetResultFloatList(defs.PumpCarbonYear, lastMinLastYearStr)
+		page.PageUpdate(defs.PageAnalysePump, defs.PumpCarbonLastYear, datalist)
+		//太阳能热水
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatEfficiencyDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterHeatEfficiencyDay, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatEfficiencyMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterHeatEfficiencyMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatEfficiencyYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterHeatEfficiencyYear, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterGuaranteeRateDay, lastMinDayStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterGuaranteeRateDay, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterGuaranteeRateMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterGuaranteeRateMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterGuaranteeRateYear, lastMinYearStr)
+		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterGuaranteeRateYear, datalist)
 
 		page.PageUpload()
 	}

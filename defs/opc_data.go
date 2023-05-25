@@ -20,11 +20,16 @@ var GroupHallwayTemp = []string{"group_hallway_temp1", //1组团走廊温度
 
 // 页面名
 const (
-	PageSystemEnergy       = "sys_ener"
-	PageSystemRefigeration = "sys_ref"
-	PageSystemPump         = "sys_pump"
-	PageSystemSolarWater   = "sys_sw"
-	PageSystemSolarElec    = "sys_se"
+	PageBasicMap            = "bas_map"
+	PageSystemEnergy        = "sys_ener"
+	PageSystemRefigeration  = "sys_ref"
+	PageSystemPump          = "sys_pump"
+	PageSystemSolarWater    = "sys_sw"
+	PageSystemSolarElec     = "sys_se"
+	PageAnalyseEnergy       = "ana_ener"
+	PageAnalyseRefigeration = "ana_ref"
+	PageAnalysePump         = "ana_pump"
+	PageAnalyseSolarWater   = "ana_sw"
 )
 
 // 计算结果表名
@@ -59,6 +64,7 @@ const (
 	EnergyCarbonDay                    = "energy_carbon_day"                      //能源站每日各小时碳排
 	EnergyCarbonMonth                  = "energy_carbon_month"                    //能源站每月各天碳排总和
 	EnergyCarbonYear                   = "energy_carbon_year"                     //能源站每年各月碳排总和
+	EnergyCarbonLastYear               = "energy_carbon_last_year"                //能源站去年各月碳排总和
 	EnergyBoilerPayloadDay             = "energy_boiler_payload_day"              //能源站每日各小时锅炉负载
 	EnergyBoilerPayloadMonth           = "energy_boiler_payload_month"            //能源站每月各天平均锅炉负载
 	EnergyBoilerPayloadYear            = "energy_boiler_payload_year"             //能源站每年各月平均锅炉负载
@@ -89,26 +95,32 @@ const (
 	ColdCarbonDay             = "cold_carbon_day"              //制冷中心每日各小时碳排
 	ColdCarbonMonth           = "cold_carbon_month"            //制冷中心每月各天碳排总和
 	ColdCarbonYear            = "cold_carbon_year"             //制冷中心每年各月碳排总和
+	ColdCarbonLastYear        = "cold_carbon_last_year"        //制冷中心每年各月碳排总和
 	ColdAlarmToday            = "cold_alarm_today"             //制冷中心今日告警
 	ColdAlarmNumToday         = "cold_alarm_num_today"         //制冷中心今日告警次数
+	ColdEfficientDay          = "cold_efficient_day"           //制冷机组效率
+	ColdPayLoadDay            = "cold_payload_day"             //制冷机组负载率
+	ColdPayLoadMonth          = "cold_payload_month"           //制冷机组负载率
+	ColdPayLoadYear           = "cold_payload_year"            //制冷机组负载率
 
-	PumpPowerMin      = "pump_power_min"       //二次泵站功率
-	PumpPowerToday    = "pump_power_today"     //二次泵站今日能耗
-	PumpEnergyCostDay = "pump_energy_cost_day" //二次泵站每日各小时能耗
-	PumpCarbonMonth   = "pump_carbon_month"    //二次泵站每月各天碳排总和
-	PumpCarbonYear    = "pump_carbon_year"     //二次泵站每年各月碳排总和
-	PumpRunningState1 = "pump_running_state1"  //二次泵站泵运行状态
-	PumpRunningState2 = "pump_running_state2"  //二次泵站泵运行状态
-	PumpRunningState3 = "pump_running_state3"  //二次泵站泵运行状态
-	PumpRunningState4 = "pump_running_state4"  //二次泵站泵运行状态
-	PumpRunningState5 = "pump_running_state5"  //二次泵站泵运行状态
-	PumpRunningState6 = "pump_running_state6"  //二次泵站泵运行状态
-	PumpHeatHour1     = "pump_heat_hour1"      //二次泵站当小时每分钟环路1输热量
-	PumpHeatHour2     = "pump_heat_hour2"      //二次泵站当小时每分钟环路2输热量
-	PumpEHR1          = "pump_EHR1"            //二次泵站环路1每日EHR
-	PumpEHR2          = "pump_EHR2"            //二次泵站环路2每日EHR
-	PumpAlarmToday    = "pump_alarm_today"     //二次泵站今日告警
-	PumpAlarmNumToday = "pump_alarm_num_today" //二次泵站今日告警次数
+	PumpPowerMin       = "pump_power_min"        //二次泵站功率
+	PumpPowerToday     = "pump_power_today"      //二次泵站今日能耗
+	PumpEnergyCostDay  = "pump_energy_cost_day"  //二次泵站每日各小时能耗
+	PumpCarbonMonth    = "pump_carbon_month"     //二次泵站每月各天碳排总和
+	PumpCarbonYear     = "pump_carbon_year"      //二次泵站每年各月碳排总和
+	PumpCarbonLastYear = "pump_carbon_last_year" //二次泵站每年各月碳排总和
+	PumpRunningState1  = "pump_running_state1"   //二次泵站泵运行状态
+	PumpRunningState2  = "pump_running_state2"   //二次泵站泵运行状态
+	PumpRunningState3  = "pump_running_state3"   //二次泵站泵运行状态
+	PumpRunningState4  = "pump_running_state4"   //二次泵站泵运行状态
+	PumpRunningState5  = "pump_running_state5"   //二次泵站泵运行状态
+	PumpRunningState6  = "pump_running_state6"   //二次泵站泵运行状态
+	PumpHeatHour1      = "pump_heat_hour1"       //二次泵站当小时每分钟环路1输热量
+	PumpHeatHour2      = "pump_heat_hour2"       //二次泵站当小时每分钟环路2输热量
+	PumpEHR1           = "pump_EHR1"             //二次泵站环路1每日EHR
+	PumpEHR2           = "pump_EHR2"             //二次泵站环路2每日EHR
+	PumpAlarmToday     = "pump_alarm_today"      //二次泵站今日告警
+	PumpAlarmNumToday  = "pump_alarm_num_today"  //二次泵站今日告警次数
 
 	SolarWaterBoilerPowerConsumptionToday = "solar_water_boiler_power_comsumption_today" //太阳能热水电加热器今日总耗电量
 	SolarWaterHeatCollecterInT            = "solar_water_heat_collecter_in_temp"         //太阳能热水集热器进口温度
