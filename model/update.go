@@ -172,6 +172,9 @@ func updateHour(t time.Time, upsert bool) {
 func updateMinute(t time.Time, upsert bool) {
 	lastMinTime := t
 	lastMin := lastMinTime.Minute()
+	month := int(t.Month())
+	lastMinYearStr := fmt.Sprintf("%04d", t.Year())
+	lastMinMonthStr := fmt.Sprintf("%s/%02d", lastMinYearStr, month)
 	lastMinDayStr := fmt.Sprintf("%04d/%02d/%02d", lastMinTime.Year(), lastMinTime.Month(), lastMinTime.Day())
 	lastMinHourStr := fmt.Sprintf("%s %02d", lastMinDayStr, lastMinTime.Hour())
 	lastMinStr := fmt.Sprintf("%s:%02d", lastMinHourStr, lastMinTime.Minute())
@@ -186,8 +189,14 @@ func updateMinute(t time.Time, upsert bool) {
 	if upsert {
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyAlarmNumToday, data)
 	}
-	UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime) //制冷中心
-	UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime) //二次泵站
+	data = UpdateColdAlarm(lastMinHourStr, lastMin, lastMinTime) //制冷中心
+	if upsert {
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdAlarmNumToday, data)
+	}
+	data = UpdatePumpAlarm(lastMinHourStr, lastMin, lastMinTime) //二次泵站
+	if upsert {
+		page.PageUpdate(defs.PageSystemPump, defs.PumpAlarmNumToday, data)
+	}
 	//之后计算要用的数据
 
 	// exampleTime := "2022/05/01 08:05"
@@ -256,10 +265,6 @@ func updateMinute(t time.Time, upsert bool) {
 		dataList = CalcEnergyBoilerEnergyCost(lastMinHourStr) //本小时各锅炉能耗(单位kW·h)
 		q23 := dataList[0] + dataList[1] + dataList[2] + dataList[3]
 		dataList = CalcEnergyBoilerEnergyCostToday(lastMinDayStr, dataList) //今日各锅炉能耗
-		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday1, dataList[0])
-		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday2, dataList[1])
-		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday3, dataList[2])
-		MongoUpsertOne(defs.EnergyBoilerPowerConsumptionToday4, dataList[3])
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday1, dataList[0])
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday2, dataList[1])
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyBoilerPowerConsumptionToday3, dataList[2])
@@ -275,68 +280,84 @@ func updateMinute(t time.Time, upsert bool) {
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyTankRunningNum, data)
 
 		dataList = CalcEnergyRunningTimeToday(lastMinTime) //设备今日运行时长
-		MongoUpsertOne(defs.EnergyRunningTimeToday, dataList)
+		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyRunningTimeToday, dataList)
 
 		data = CalcEnergyHeatSupplyToday(t) //总供热量
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatSupplyToday, data)
 
 		//制冷中心
 		q1 := CalcColdMachinePower(lastMinHourStr, lastMin, defs.ColdMachine1)
-		MongoUpsertOne(defs.ColdMachinePowerMin1, q1)
 		q2 := CalcColdMachinePower(lastMinHourStr, lastMin, defs.ColdMachine2)
-		MongoUpsertOne(defs.ColdMachinePowerMin2, q2)
 		q3 := CalcColdMachinePower(lastMinHourStr, lastMin, defs.ColdMachine3)
-		MongoUpsertOne(defs.ColdMachinePowerMin3, q3)
 		q4 := CalcColdCabinetPower(lastMinHourStr, lastMin)
 		data = q1 + q2 + q3 + q4 //总功率
-		MongoUpsertOne(defs.ColdPowerMin, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdPowerMin, data)
+
 		data = q1 + q2 + q3 //制冷机功率
-		MongoUpsertOne(defs.ColdMachinePowerMin, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdMachinePowerMin, data)
+
 		data = CalcColdEnergyCostToday(lastMinTime) //今日耗能
-		MongoUpsertOne(defs.ColdEnergyCostToday, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdEnergyCostToday, data)
+
 		data = CalcColdMachineRunningNum(lastMinHourStr, lastMin) //制冷机运行数目
-		MongoUpsertOne(defs.ColdMachineRunningNum, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdMachineRunningNum, data)
+
 		data = CalcColdCoolingWaterInT(lastMinHourStr, lastMin) //冷却进水温度
-		MongoUpsertOne(defs.ColdCoolingWaterInT, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdCoolingWaterInT, data)
+
 		data = CalcColdCoolingWaterOutT(lastMinHourStr, lastMin) //冷却出水温度
-		MongoUpsertOne(defs.ColdCoolingWaterOutT, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdCoolingWaterOutT, data)
+
 		data = CalcColdRefrigeratedWaterInT(lastMinHourStr, lastMin) //冷冻进水温度
-		MongoUpsertOne(defs.ColdRefrigeratedWaterInT, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdRefrigeratedWaterInT, data)
+
 		data = CalcColdRefrigeratedWaterOutT(lastMinHourStr, lastMin) //冷冻出水温度
-		MongoUpsertOne(defs.ColdRefrigeratedWaterOutT, data)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdRefrigeratedWaterOutT, data)
 
 		//二次泵站
 		data = CalcPumpPowerMin(lastMinHourStr, lastMin) //总功率
-		MongoUpsertOne(defs.PumpPowerMin, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpPowerMin, data)
+
 		data = CalcPumpEnergyCostToday(lastMinTime) //今日耗电量
-		MongoUpsertOne(defs.PumpPowerToday, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpPowerToday, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 1) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState1, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState1, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 2) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState2, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState2, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 3) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState3, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState3, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 4) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState4, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState4, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 5) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState5, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState5, data)
+
 		data = CalcPumpRunningState(lastMinHourStr, lastMin, 6) //泵运行状态
-		MongoUpsertOne(defs.PumpRunningState6, data)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpRunningState6, data)
 
 		//太阳能热水
 		if GAerr == nil {
 			data = CalcSolarWaterBoilerPowerConsumptionToday(t) //电加热器今日总耗电量
-			MongoUpsertOne(defs.SolarWaterBoilerPowerConsumptionToday, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterBoilerPowerConsumptionToday, data)
+
 			data = CalcSolarWaterHeatCollecterInT(&GAData.Info) //集热器进口温度
-			MongoUpsertOne(defs.SolarWaterHeatCollecterInT, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollecterInT, data)
+
 			data = CalcSolarWaterHeatCollecterOutT(&GAData.Info) //集热器出口温度
-			MongoUpsertOne(defs.SolarWaterHeatCollecterOutT, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollecterOutT, data)
+
 			data = CalcSolarWaterJRQT(&GAData.Info) //锅炉温度
-			MongoUpsertOne(defs.SolarWaterJRQT, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterJRQT, data)
+
 			data = CalcSolarWaterHeatCollectionToday(t) //今日总集热量
-			MongoUpsertOne(defs.SolarWaterHeatCollectionToday, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollectionToday, data)
+
 			data = CalcSolarWaterPumpRunningNum(&GAData.Info) //水泵运行数目
-			MongoUpsertOne(defs.SolarWaterPumpRunningNum, data)
+			page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterPumpRunningNum, data)
 		}
 	}
 
@@ -346,6 +367,8 @@ func updateMinute(t time.Time, upsert bool) {
 
 	//更新页面数据
 	if upsert {
+		//——————————————————系统层——————————————————
+		//能源站
 		datalist, _ := GetResultFloatList(defs.EnergyHeatStorageAndRelease, lastMinDayStr)
 		page.PageUpdate(defs.PageSystemEnergy, defs.EnergyHeatStorageAndRelease, datalist)
 		datalist, _ = GetResultFloatList(defs.EnergyBoilerEnergyCost, lastMinDayStr)
@@ -356,6 +379,38 @@ func updateMinute(t time.Time, upsert bool) {
 			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
 			page.PageUpdate(defs.PageSystemEnergy, v, datalist)
 		}
+		//制冷中心
+		datalist, _ = GetResultFloatList(defs.ColdEnergyCostDay, lastMinDayStr) //耗能
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdEnergyCostDay, datalist)
+		maplist, _ = GetResultInterfaceList(defs.ColdAlarmToday, lastMinDayStr)
+		page.PageUpdate(defs.PageSystemRefigeration, defs.ColdAlarmToday, maplist)
+		for _, v := range defs.OpcItemRef {
+			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
+			page.PageUpdate(defs.PageSystemRefigeration, v, datalist)
+		}
+		//二次泵站
+		maplist, _ = GetResultInterfaceList(defs.PumpAlarmToday, lastMinDayStr)
+		page.PageUpdate(defs.PageSystemPump, defs.PumpAlarmToday, maplist)
+		//太阳能热水
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatCollectionDay, lastMinDayStr)
+		page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollectionDay, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatCollectionMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollectionMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterHeatCollectionYear, lastMinYearStr)
+		page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterHeatCollectionYear, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarWaterBoilerPowerConsumptionDay, lastMinDayStr)
+		page.PageUpdate(defs.PageSystemSolarWater, defs.SolarWaterBoilerPowerConsumptionDay, datalist)
+		//太阳能发电
+		datalist, _ = GetResultFloatList(defs.SolarElecGenMonth, lastMinMonthStr)
+		page.PageUpdate(defs.PageSystemSolarElec, defs.SolarElecGenMonth, datalist)
+		datalist, _ = GetResultFloatList(defs.SolarElecGenYear, lastMinYearStr)
+		page.PageUpdate(defs.PageSystemSolarElec, defs.SolarElecGenYear, datalist)
+		for _, v := range defs.OpcItemSolarElec {
+			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
+			page.PageUpdate(defs.PageSystemSolarElec, v, datalist)
+		}
+		//——————————————————能效分析——————————————————
+
 		page.PageUpload()
 	}
 }

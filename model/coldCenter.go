@@ -235,7 +235,7 @@ var coldAlarmOpcList = map[string]defs.Alarm{
 }
 
 // 报警
-func UpdateColdAlarm(hourStr string, min int, t time.Time) {
+func UpdateColdAlarm(hourStr string, min int, t time.Time) float64 {
 	var oldList defs.MongoAlarmList
 	MongoResult.FindOne(context.TODO(), bson.D{{"name", defs.ColdAlarmToday}, {"time", hourStr}}).Decode(&oldList)
 	alarmMap := make(map[string]int)
@@ -287,4 +287,5 @@ func UpdateColdAlarm(hourStr string, min int, t time.Time) {
 	}
 
 	MongoUpsertOne(defs.ColdAlarmNumToday, alarmNum)
+	return alarmNum
 }

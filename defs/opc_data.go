@@ -20,7 +20,11 @@ var GroupHallwayTemp = []string{"group_hallway_temp1", //1组团走廊温度
 
 // 页面名
 const (
-	PageSystemEnergy = "sys_ener"
+	PageSystemEnergy       = "sys_ener"
+	PageSystemRefigeration = "sys_ref"
+	PageSystemPump         = "sys_pump"
+	PageSystemSolarWater   = "sys_sw"
+	PageSystemSolarElec    = "sys_se"
 )
 
 // 计算结果表名
