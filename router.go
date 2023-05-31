@@ -42,6 +42,7 @@ func InitRouter() { //可以返回一个*gin.Engine
 		routes.BasicMapRouter(rPublic)
 
 		routes.ImportDBRouter(rPublic)
+		routes.EnergyStationRouter(rPublic)
 	}
 	// rAuth组内的路由需要有jwt的token
 	rAuth := r.Group("api")
@@ -50,7 +51,7 @@ func InitRouter() { //可以返回一个*gin.Engine
 		// 验证token
 		rAuth.POST("userJwt", api.Verify)
 		// TODO 后续所有接口都在这里，验证token
-		routes.EnergyStationRouter(rAuth)
+		// routes.EnergyStationRouter(rAuth)
 
 		// routes.ImportDBRouter(rAuth)
 	}
