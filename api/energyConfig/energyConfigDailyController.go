@@ -1,17 +1,24 @@
 package energyConfig
 
 import (
+	"encoding/json"
 	"energy/defs"
 	_ "energy/defs"
 	"energy/model"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"net/http"
 	"strings"
 	"time"
 )
 
 type EnergyConfigDailyController struct {
+}
+
+type TankConfig struct {
+	Data [6]float64
 }
 
 var (
@@ -185,9 +192,34 @@ func GetConsumption(c *gin.Context) {
 
 func GetTankConfigDaily(c *gin.Context) {
 	//Energy.Daily_load_prediction = model.GetTotalLoad("2023/03/18")
-	c.JSON(http.StatusOK, gin.H{
-		"data": Energy.GetTankRecommendedHourlyWorkingCondition(),
-	})
+
+	var a [6]float64
+
+	val, err := model.RedisClient.Get("tankConfigDaily").Result()
+	if err != nil {
+		// 如果返回的错误是key不存在
+		if errors.Is(err, redis.Nil) {
+			a = Energy.GetTankRecommendedHourlyWorkingCondition()
+
+			c.JSON(http.StatusOK, gin.H{
+				"data": Energy.GetTankRecommendedHourlyWorkingCondition(),
+			})
+
+			tankConfigDailyStruct := TankConfig{}
+			tankConfigDailyStruct.Data = a
+
+			result, _ := json.Marshal(&tankConfigDailyStruct)
+
+			model.RedisClient.Set("tankConfigDaily", result, time.Minute)
+		}
+	} else {
+		data := TankConfig{}
+		_ = json.Unmarshal([]byte(val), &data)
+
+		c.JSON(http.StatusOK, gin.H{
+			"data": data.Data,
+		})
+	}
 }
 
 func GetWorkTime(c *gin.Context) {
