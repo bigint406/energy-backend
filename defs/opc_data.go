@@ -30,6 +30,7 @@ const (
 	PageAnalyseRefigeration = "ana_ref"
 	PageAnalysePump         = "ana_pump"
 	PageAnalyseSolarWater   = "ana_sw"
+	PageGreenPower          = "green_pw"
 )
 
 // 计算结果表名
@@ -144,6 +145,8 @@ const (
 	SolarElecGenDay   = "solar_elec_gen_day"   //太阳能发电当日每小时
 	SolarElecGenMonth = "solar_elec_gen_month" //太阳能发电当月每日
 	SolarElecGenYear  = "solar_elec_gen_year"  //太阳能发电当年每月
+
+	TotalPowerThisMonth = "total_power_this_month" //能源站、制冷站、二次泵站能耗本月之和
 )
 
 // 其它常数

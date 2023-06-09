@@ -429,6 +429,11 @@ func updateMinute(t time.Time, upsert bool) {
 			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
 			page.PageUpdate(defs.PageSystemSolarElec, v, datalist)
 		}
+		for _, v := range defs.OpcItemGreenAndSolarElec {
+			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
+			page.PageUpdate(defs.PageSystemSolarElec, v, datalist)
+			page.PageUpdate(defs.PageGreenPower, v, datalist)
+		}
 		//——————————————————能效分析——————————————————
 		//能源站
 		datalist, _ = GetResultFloatList(defs.EnergyBoilerEfficiencyDay, lastMinDayStr)
@@ -488,7 +493,13 @@ func updateMinute(t time.Time, upsert bool) {
 		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterGuaranteeRateMonth, datalist)
 		datalist, _ = GetResultFloatList(defs.SolarWaterGuaranteeRateYear, lastMinYearStr)
 		page.PageUpdate(defs.PageAnalyseSolarWater, defs.SolarWaterGuaranteeRateYear, datalist)
-
+		//——————————————————绿电——————————————————
+		data = CalcEnergyCarbonMonth(lastMinMonthStr)
+		page.PageUpdate(defs.PageGreenPower, defs.TotalPowerThisMonth, data)
+		for _, v := range defs.OpcItemGreenPower {
+			datalist, _ = GetOpcFloatList(v, lastMinHourStr)
+			page.PageUpdate(defs.PageGreenPower, v, datalist)
+		}
 		page.PageUpload()
 	}
 }
