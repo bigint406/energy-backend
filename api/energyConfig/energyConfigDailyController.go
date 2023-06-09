@@ -21,6 +21,10 @@ type TankConfig struct {
 	Data [6]float64
 }
 
+type DeviceWorkState struct {
+	Data [22]string
+}
+
 var (
 	Vally_cost_time_start  = 23
 	Vally_cost_time_end    = 7
@@ -210,7 +214,7 @@ func GetTankConfigDaily(c *gin.Context) {
 
 			result, _ := json.Marshal(&tankConfigDailyStruct)
 
-			model.RedisClient.Set("tankConfigDaily", result, time.Minute)
+			model.RedisClient.Set("tankConfigDaily", result, 10*time.Minute)
 		}
 	} else {
 		data := TankConfig{}
@@ -238,6 +242,74 @@ func GetDeviceWorkState(c *gin.Context) {
 	19-20 DVT
 	*/
 	//var array = [...]string{"ZLZ.系统运行中1", "ZLZ.系统运行中2", "ZLZ.系统运行中3", "ZLZ.系统运行中4", "ZLZ.RUN_P1", "ZLZ.RUN_P2", "ZLZ.RUN_P3", "ZLZ.RUN_P7", "ZLZ.RUN_P8", "ZLZ.RUN_P9", "ZLZ.OPEN_V1", "ZLZ.OPEN_V2", "ZLZ.OPEN_V3", "ZLZ.OPEN_V4", "ZLZ.OPEN_V5", "ZLZ.OPEN_V6", "ZLZ.OPEN_V8", "ZLZ.OPEN_V11", "ZLZ.OUTPUT_T29", "ZLZ.OUTPUT_T30"}
+	/*
+		val, err := model.RedisClient.Get("deviceWorkState").Result()
+		if err != nil {
+			// 如果返回的错误是key不存在
+			if errors.Is(err, redis.Nil) {
+				var array = [...]string{"ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD1", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD2", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD3", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD4", "ZLZ.RUN_P1", "ZLZ.RUN_P2", "ZLZ.RUN_P3", "ZLZ.RUN_P7", "ZLZ.RUN_P8", "ZLZ.RUN_P9", "ZLZ.OPEN_V1", "ZLZ.OPEN_V2", "ZLZ.OPEN_V3", "ZLZ.OPEN_V4", "ZLZ.OPEN_V5", "ZLZ.OPEN_V6", "ZLZ.OPEN_V8", "ZLZ.OPEN_V11", "ZLZ.OUTPUT_T29", "ZLZ.OUTPUT_T30"}
+				var array2 [20]int
+				var result [22]int
+				var stringResult [22]string
+
+				for i := 0; i < len(array); i++ {
+					a, _ := model.GetOpcFloatList(array[i], MakeTimeStr()) //ZS
+
+					if a[0] == 0 {
+						array2[i] = 0
+					} else {
+						array2[i] = 1
+					}
+				}
+
+				for i := 0; i < 4; i++ {
+					result[i] = array2[i]
+				}
+				if array2[10] == 0 && array2[15] == 1 {
+					result[4] = 1
+					result[5] = 1
+				}
+				for i := 6; i < 21; i++ {
+					result[i] = array2[i-2]
+				}
+
+				for i := 0; i < 12; i++ {
+					if result[i] == 0 {
+						stringResult[i] = "不工作"
+					} else if result[i] == 1 {
+						stringResult[i] = "工作"
+					}
+				}
+				for i := 12; i < 22; i++ {
+					if result[i] == 0 {
+						stringResult[i] = "关闭"
+					} else if result[i] == 1 {
+						stringResult[i] = "开通"
+					}
+				}
+
+				deviceWorkStateStruct := DeviceWorkState{}
+				deviceWorkStateStruct.Data = stringResult
+
+				result2, _ := json.Marshal(&deviceWorkStateStruct)
+
+				model.RedisClient.Set("deviceWorkState", result2, 10*time.Minute)
+				c.JSON(http.StatusOK, gin.H{
+					"data": stringResult,
+				})
+			}
+		} else {
+			data := DeviceWorkState{}
+			_ = json.Unmarshal([]byte(val), &data)
+
+			c.JSON(http.StatusOK, gin.H{
+				"data": data.Data,
+			})
+		}
+
+
+	*/
+
 	var array = [...]string{"ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD1", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD2", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD3", "ZLZ.%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E4%B8%AD4", "ZLZ.RUN_P1", "ZLZ.RUN_P2", "ZLZ.RUN_P3", "ZLZ.RUN_P7", "ZLZ.RUN_P8", "ZLZ.RUN_P9", "ZLZ.OPEN_V1", "ZLZ.OPEN_V2", "ZLZ.OPEN_V3", "ZLZ.OPEN_V4", "ZLZ.OPEN_V5", "ZLZ.OPEN_V6", "ZLZ.OPEN_V8", "ZLZ.OPEN_V11", "ZLZ.OUTPUT_T29", "ZLZ.OUTPUT_T30"}
 	var array2 [20]int
 	var result [22]int
@@ -286,6 +358,7 @@ func GetDeviceWorkState(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": stringResult,
 	})
+
 }
 
 func MakeTimeStr() string {

@@ -115,7 +115,7 @@ func MakeInputBody(index string) []byte {
 
 	//前一天数据
 	load := GetLoad(index, "yesterday")
-	temperature := GetData("temperature", int(time.Now().Unix()-86400), index)
+	temperature := GetData("temperature", int(time.Now().Unix()-86400), index) //TODO:改回去
 	humidity := GetData("humidity", int(time.Now().Unix()-86400), index)
 	radiation := GetData("radiation", int(time.Now().Unix()-86400), index)
 	wind := GetData("wind", int(time.Now().Unix()-86400), index)
